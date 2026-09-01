@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 # ============================================================================
-# 1. CORE ENGINE & MOCK DATA (SELF-CONTAINED WITH PIPELINE IMPORT FALLBACK)
+# 1. CORE DATA ENGINE & MULTI-AGENT RUNTIME (SELF-CONTAINED + IMPORT RESILIENT)
 # ============================================================================
 try:
     from pipeline import RAGIndex, RISK_PROFILES, LOG_PATH, run_pipeline, log_session
@@ -13,9 +13,9 @@ try:
 except ImportError:
     TICKERS = ["RELIANCE", "TATAMOTORS", "INFY", "ZOMATO", "HDFCBANK"]
     RISK_PROFILES = {
-        "Conservative (Aarav - 21)": {"risk": "CONSERVATIVE", "tolerance": 5.0, "capital": "₹50,000"},
-        "Moderate (Priya - 25)": {"risk": "MODERATE", "tolerance": 15.0, "capital": "₹2,50,000"},
-        "Aggressive (Vikram - 28)": {"risk": "AGGRESSIVE", "tolerance": 25.0, "capital": "₹10,00,000"}
+        "Conservative (Aarav - 21)": {"risk": "CONSERVATIVE", "tolerance": 5.0, "capital": "₹50,000", "persona": "Student / Capital Protection"},
+        "Moderate (Priya - 25)": {"risk": "MODERATE", "tolerance": 15.0, "capital": "₹2,50,000", "persona": "Working Professional / Balanced SIP"},
+        "Aggressive (Vikram - 28)": {"risk": "AGGRESSIVE", "tolerance": 25.0, "capital": "₹10,00,000", "persona": "Full-Time Trader / Momentum F&O"}
     }
     LOG_PATH = "audit_log.csv"
     
@@ -70,14 +70,14 @@ except ImportError:
         if is_conservative:
             if market_data["rsi"] > 70:
                 action = "AVOID / CAPITAL PRESERVATION"
-                reasoning = f"Conservative risk guardrail triggered: RSI at {market_data['rsi']:.1f} signals extreme overbought territory. Drawdown risk violates {profile_name}'s 5% maximum loss threshold."
+                reasoning = f"Conservative risk guardrail triggered: RSI at {market_data['rsi']:.1f} signals extreme overbought territory. Drawdown risk violates maximum loss threshold (5.0%)."
             else:
                 action = "ACCUMULATE SIP"
                 reasoning = f"Verified 0.0% promoter pledge in SEBI disclosures and steady EBITDA expansion meet institutional safety standards."
         elif is_aggressive:
             if market_data["rsi"] > 70:
                 action = "MOMENTUM BREAKOUT BUY"
-                reasoning = f"Volume Z-score (+{market_data['vol_zscore']}σ) and FII inflows (+₹{market_data['fii_flow']} Cr) justify aggressive breakout sizing with a strict 2.5% trailing stop."
+                reasoning = f"Volume Z-score (+{market_data['vol_zscore']}σ) and FII inflows (+₹{market_data['fii_flow']} Cr) justify aggressive breakout sizing with strict 2.5% trailing stop."
             else:
                 action = "AGGRESSIVE ACCUMULATE"
                 reasoning = "Institutional accumulation detected with positive options PCR support base."
@@ -113,10 +113,10 @@ except ImportError:
         }
 
 # ============================================================================
-# 2. STREAMLIT PAGE CONFIG & GRAND OBSIDIAN CYBERPUNK HUD
+# 2. STREAMLIT PAGE SETUP & GRAND HOLOGRAPHIC STYLING
 # ============================================================================
 st.set_page_config(
-    page_title="SPIDER-SENSE // Quantum Autonomous Swarm",
+    page_title="SPIDER-SENSE // Quantum Swarm Intelligence",
     page_icon="🕸️",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -132,7 +132,7 @@ html, body, [class*="css"] {
     color: #F8FAFC;
 }
 
-/* Deep Obsidian Glassmorphic Matrix Background */
+/* Deep Obsidian Matrix Background */
 .stApp {
     background-color: #010307;
     background-image: 
@@ -150,15 +150,15 @@ html, body, [class*="css"] {
     max-width: 1440px;
 }
 
-/* Grand Holographic Brand Header */
+/* Top Tactical Navigation Bar */
 .tactical-navbar {
     background: linear-gradient(135deg, rgba(8, 14, 28, 0.96) 0%, rgba(3, 5, 12, 0.98) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-top: 4px solid #FF1E42;
     border-bottom: 2.5px solid #B026FF;
     border-radius: 20px;
-    padding: 22px 32px;
-    margin-bottom: 22px;
+    padding: 20px 30px;
+    margin-bottom: 18px;
     box-shadow: 0 24px 50px rgba(0,0,0,0.95), 0 0 35px rgba(176, 38, 255, 0.18);
     display: flex;
     justify-content: space-between;
@@ -169,7 +169,7 @@ html, body, [class*="css"] {
 
 .brand-title {
     font-family: 'Syne', sans-serif !important;
-    font-size: 2.5rem;
+    font-size: 2.4rem;
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -182,7 +182,7 @@ html, body, [class*="css"] {
     gap: 12px;
 }
 
-/* Grand Ticker Bar */
+/* Live Ticker Bar */
 .market-ticker-tape {
     display: flex;
     gap: 18px;
@@ -206,12 +206,12 @@ html, body, [class*="css"] {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-left: 4px solid #B026FF;
     border-radius: 18px;
-    padding: 24px 30px;
-    margin-bottom: 24px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
     box-shadow: 0 16px 40px rgba(0,0,0,0.7);
 }
 
-/* Styled Streamlit Tabs */
+/* Tabs Styling */
 .stTabs [data-baseweb="tab-list"] {
     gap: 10px;
     background: rgba(4, 7, 16, 0.95);
@@ -227,7 +227,7 @@ html, body, [class*="css"] {
     font-size: 0.92rem !important;
     font-weight: 700 !important;
     color: #94A3B8 !important;
-    padding: 12px 24px !important;
+    padding: 12px 22px !important;
     border-radius: 12px !important;
     border: 1px solid transparent !important;
     background: transparent !important;
@@ -241,56 +241,56 @@ html, body, [class*="css"] {
     box-shadow: 0 4px 22px rgba(176, 38, 255, 0.35) !important;
 }
 
-/* Grand Surface Cards */
+/* Surface Cards */
 .sp-card {
     background: linear-gradient(135deg, rgba(8, 14, 28, 0.95) 0%, rgba(3, 6, 15, 0.98) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 24px;
+    padding: 28px;
+    margin-bottom: 22px;
     box-shadow: 0 18px 45px rgba(0,0,0,0.8);
 }
 
 .sp-card-header {
     font-family: 'Syne', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: -0.01em;
     color: #F8FAFC;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #1E293B;
-    padding-bottom: 14px;
+    padding-bottom: 12px;
 }
 
-/* Master Verdict Showcase */
+/* Master Decision Hero */
 .verdict-hero-card {
     background: linear-gradient(135deg, rgba(255, 30, 66, 0.16) 0%, rgba(176, 38, 255, 0.12) 50%, rgba(4, 7, 16, 0.98) 100%);
     border: 2px solid rgba(255, 30, 66, 0.7);
     border-radius: 20px;
-    padding: 36px;
+    padding: 34px;
     text-align: center;
-    margin-bottom: 26px;
+    margin-bottom: 24px;
     box-shadow: 0 22px 55px rgba(255, 30, 66, 0.25), 0 0 35px rgba(176, 38, 255, 0.22);
 }
 
 .verdict-action {
     font-family: 'Syne', sans-serif;
-    font-size: 3rem;
+    font-size: 2.9rem;
     font-weight: 900;
     letter-spacing: -0.02em;
     margin: 10px 0;
     line-height: 1.1;
 }
 
-/* Specialized Agent Node */
+/* Agent Node Card */
 .agent-node {
     background: #040711;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
-    padding: 24px;
+    padding: 22px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -321,19 +321,19 @@ html, body, [class*="css"] {
     background: #040711;
     border: 1px solid #1E293B;
     border-left: 4.5px solid #B026FF;
-    padding: 20px 24px;
+    padding: 18px 22px;
     border-radius: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.55);
 }
 
-/* Metric KPI HUD Cards */
+/* Metrics */
 div[data-testid="stMetric"] {
     background: #040711;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-top: 3.5px solid #00FF9D;
     border-radius: 16px;
-    padding: 18px 22px;
+    padding: 16px 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.45);
 }
 div[data-testid="stMetric"] label {
@@ -350,7 +350,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     color: #F8FAFC !important;
 }
 
-/* Grand High-Impact Action Button */
+/* Action Button */
 div.stButton > button {
     font-family: 'Syne', sans-serif !important;
     font-size: 1.15rem !important;
@@ -373,28 +373,23 @@ div.stButton > button:hover {
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Grand Navbar Header
+# Navigation Header & Ticker Bar
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="tactical-navbar">
     <div>
         <div class="brand-title">🕷️ SPIDER-SENSE FINANCIAL</div>
-        <div style="color: #94A3B8; font-size: 0.92rem; margin-top: 5px; font-weight: 500;">
-            Autonomous Multi-Agent Financial Intelligence Network // Explainable Retail Research Infrastructure
+        <div style="color: #94A3B8; font-size: 0.9rem; margin-top: 5px; font-weight: 500;">
+            Autonomous Multi-Agent Financial Intelligence Network // Grounded Retail Infrastructure
         </div>
     </div>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <span class="badge-pill" style="border-color: rgba(0,245,255,0.6); color:#00F5FF; background:rgba(0,245,255,0.1);">● Swarm Live</span>
-        <span class="badge-pill" style="border-color: rgba(176,38,255,0.6); color:#D8B4FE; background:rgba(176,38,255,0.1);">Sprint 1: PS-01</span>
-        <span class="badge-pill" style="border-color: rgba(255,30,66,0.7); color:#FF4D6D; background:rgba(255,30,66,0.1);">Team YOLOTECH</span>
+        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; font-weight:800; padding:6px 12px; border-radius:6px; border:1px solid rgba(0,245,255,0.6); color:#00F5FF; background:rgba(0,245,255,0.1);">● Swarm Live</span>
+        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; font-weight:800; padding:6px 12px; border-radius:6px; border:1px solid rgba(176,38,255,0.6); color:#D8B4FE; background:rgba(176,38,255,0.1);">Sprint 1: PS-01</span>
+        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; font-weight:800; padding:6px 12px; border-radius:6px; border:1px solid rgba(255,30,66,0.7); color:#FF4D6D; background:rgba(255,30,66,0.1);">Team YOLOTECH</span>
     </div>
 </div>
-""", unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------------
-# Grand Live Market Tape Ticker
-# ---------------------------------------------------------------------------
-st.markdown("""
 <div class="market-ticker-tape">
     <div class="ticker-item"><span>NIFTY 50:</span> <span class="ticker-up">24,860.20 (+1.14%)</span></div>
     <div class="ticker-item"><span>BANK NIFTY:</span> <span class="ticker-up">53,120.40 (+0.88%)</span></div>
@@ -461,7 +456,7 @@ if st.button("DISPATCH MULTI-AGENT SWARM", use_container_width=True):
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Grand Multi-Tab Interface
+# Multi-Page Tabs
 # ---------------------------------------------------------------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🎯 Master Verdict & Guidance",
@@ -472,7 +467,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 if not st.session_state.has_run:
-    st.info("💡 Adjust parameters above and click **'DISPATCH MULTI-AGENT SWARM'** to start autonomous research.")
+    st.info("💡 Adjust parameters above and click **'DISPATCH MULTI-AGENT SWARM'** to initialize analysis.")
 else:
     outputs = st.session_state.outputs
     synthesis = st.session_state.synthesis
@@ -480,9 +475,7 @@ else:
     m_ticker = st.session_state.ticker
     m_profile = st.session_state.profile_name
 
-    # =========================================================================
-    # TAB 1: MASTER VERDICT & GUIDANCE
-    # =========================================================================
+    # Tab 1: Master Verdict
     with tab1:
         st.markdown('<div class="sp-card">', unsafe_allow_html=True)
         st.markdown(f'<div class="sp-card-header"><span>Master Synthesis Verdict // <strong>{m_ticker}</strong></span><span style="color:#B026FF; font-size:0.95rem; font-weight:700;">Persona: {m_profile}</span></div>', unsafe_allow_html=True)
@@ -514,9 +507,7 @@ else:
             """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # =========================================================================
-    # TAB 2: PARALLEL AGENT SWARM
-    # =========================================================================
+    # Tab 2: Parallel Swarm
     with tab2:
         st.markdown('<div class="sp-card">', unsafe_allow_html=True)
         st.markdown('<div class="sp-card-header">Specialized Domain Agents // Real-Time Parallel Telemetry</div>', unsafe_allow_html=True)
@@ -530,7 +521,7 @@ else:
                     <div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <strong style="color:#FFF; font-size:1.1rem; font-family:'Syne';">{o.agent}</strong>
-                            <span class="badge-pill" style="font-size:0.65rem; color:{status_col}; border-color:{status_col}50;">
+                            <span style="font-family:'JetBrains Mono'; font-size:0.65rem; color:{status_col}; border:1px solid {status_col}50; padding:2px 8px; border-radius:4px;">
                                 {'DEGRADED' if o.degraded else 'NOMINAL'}
                             </span>
                         </div>
@@ -555,9 +546,7 @@ else:
                 """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # =========================================================================
-    # TAB 3: BEHAVIORAL PERSONALIZATION MATRIX
-    # =========================================================================
+    # Tab 3: Behavioral Matrix
     with tab3:
         st.markdown('<div class="sp-card">', unsafe_allow_html=True)
         st.markdown('<div class="sp-card-header">Behavioral Personalization Matrix // Identical Feed Across Risk Profiles</div>', unsafe_allow_html=True)
@@ -593,9 +582,7 @@ else:
                 """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # =========================================================================
-    # TAB 4: SEBI CITATIONS & DOCUMENT RAG
-    # =========================================================================
+    # Tab 4: SEBI RAG
     with tab4:
         st.markdown('<div class="sp-card">', unsafe_allow_html=True)
         st.markdown(f'<div class="sp-card-header">Retrieved SEBI Disclosures & Regulatory Attributions // {m_ticker}</div>', unsafe_allow_html=True)
@@ -616,9 +603,7 @@ else:
                 """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # =========================================================================
-    # TAB 5: BENCHMARKS & AUDIT LOGS
-    # =========================================================================
+    # Tab 5: Benchmarks
     with tab5:
         st.markdown('<div class="sp-card">', unsafe_allow_html=True)
         st.markdown('<div class="sp-card-header">Quantitative Benchmarks & System Telemetry</div>', unsafe_allow_html=True)
