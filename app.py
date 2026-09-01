@@ -5,16 +5,15 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 
-# Check optional Plotly dependency for grand interactive charts
+# Check optional Plotly dependency for interactive charts
 try:
     import plotly.graph_objects as go
-    import plotly.express as px
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
 
 # ============================================================================
-# 1. CORE DATA ENGINE & MULTI-AGENT RUNTIME
+# 1. CORE DATA ENGINE & MULTI-AGENT RUNTIME (SAFE FALLBACKS)
 # ============================================================================
 try:
     from pipeline import RAGIndex, RISK_PROFILES, LOG_PATH, run_pipeline, log_session
@@ -27,24 +26,21 @@ except ImportError:
             "tolerance": 5.0,
             "capital": "₹50,000",
             "persona": "Student / Strict Capital Protection",
-            "max_drawdown": "5.0%",
-            "suggested_asset": "Large Cap + Liquid ETF"
+            "max_drawdown": "5.0%"
         },
         "Moderate (Priya - 25)": {
             "risk": "MODERATE",
             "tolerance": 15.0,
             "capital": "₹2,50,000",
             "persona": "Working Professional / Balanced SIP",
-            "max_drawdown": "15.0%",
-            "suggested_asset": "Flexi-Cap Equity + Debt"
+            "max_drawdown": "15.0%"
         },
         "Aggressive (Vikram - 28)": {
             "risk": "AGGRESSIVE",
             "tolerance": 25.0,
             "capital": "₹10,00,000",
             "persona": "Active Trader / High-Beta Momentum",
-            "max_drawdown": "25.0%",
-            "suggested_asset": "F&O Momentum & Breakouts"
+            "max_drawdown": "25.0%"
         }
     }
     LOG_PATH = "audit_log.csv"
@@ -70,6 +66,7 @@ except ImportError:
         return {
             "price": base_price * (0.92 if crash else 1.0),
             "rsi": rsi_val,
+            "rsi_14": rsi_val,
             "vol_zscore": -1.2 if crash else 3.85,
             "fii_flow": -680.0 if crash else 740.5,
             "dii_flow": 320.0,
@@ -95,31 +92,36 @@ except ImportError:
         degraded = simulate_degraded is not None and simulate_degraded != "none"
         conf = 0.38 if degraded else 0.88
         
+        rsi_check = market_data.get("rsi", market_data.get("rsi_14", 60.0))
+        vol_check = market_data.get("vol_zscore", market_data.get("volume_zscore", 2.0))
+        fii_check = market_data.get("fii_flow", market_data.get("fii_flow_crores", 300.0))
+        pcr_check = market_data.get("pcr", market_data.get("options_pcr", 1.1))
+
         is_aggressive = "Aggressive" in profile_name
         is_conservative = "Conservative" in profile_name
         
         if is_conservative:
-            if market_data["rsi"] > 70:
+            if rsi_check > 70:
                 action = "AVOID / CAPITAL PRESERVATION"
-                reasoning = f"Conservative risk boundary triggered: RSI at {market_data['rsi']:.1f} signals severe overbought risk. Tail risk exceeds the 5.0% maximum drawdown ceiling. Recommended rotation into sovereign treasury instruments."
+                reasoning = f"Conservative risk boundary triggered: RSI at {rsi_check:.1f} signals severe overbought risk. Downside volatility violates the 5.0% maximum drawdown ceiling. Reallocating to sovereign yields."
             else:
                 action = "ACCUMULATE SIP"
-                reasoning = f"Verified 0.0% promoter pledge in statutory filings and predictable cash flow margins fit institutional safety criteria."
+                reasoning = f"Verified 0.0% promoter pledge in statutory filings and steady EBITDA margins fit institutional safety criteria."
         elif is_aggressive:
-            if market_data["rsi"] > 70:
+            if rsi_check > 70:
                 action = "MOMENTUM BREAKOUT BUY"
-                reasoning = f"Volume anomaly Z-score (+{market_data['vol_zscore']}σ) combined with ₹{market_data['fii_flow']} Cr institutional inflow confirms liquidity breakout. Sized with trailing stop at 2.5%."
+                reasoning = f"Volume anomaly Z-score (+{vol_check}σ) combined with ₹{fii_check} Cr institutional inflow confirms liquidity breakout. Sized with trailing stop at 2.5%."
             else:
                 action = "AGGRESSIVE ACCUMULATE"
-                reasoning = "Institutional derivatives positioning (Options PCR 1.35) validates rapid capital accumulation with upside bias."
+                reasoning = f"Institutional derivatives positioning (Options PCR {pcr_check:.2f}) validates rapid capital accumulation with upside bias."
         else:
             action = "MODERATE ALLOCATION"
             reasoning = "Multi-timeframe momentum and fundamental filing integrity are aligned within baseline portfolio tolerances."
 
         outputs = [
-            MockAgentOutput("TechnicalMomentumAgent", "Price Momentum & Vol Anomaly", "BULLISH_OVERBOUGHT" if market_data["rsi"] > 70 else "ACCUMULATION", 0.91 if not degraded else 0.35, f"RSI(14) at {market_data['rsi']:.1f}. Volume Z-Score at +{market_data['vol_zscore']}σ denotes anomalous institutional accumulation.", 38.4, ["NSE Level-2 Order Stream", "Tick Telemetry V4"], degraded),
+            MockAgentOutput("TechnicalMomentumAgent", "Price Momentum & Vol Anomaly", "BULLISH_OVERBOUGHT" if rsi_check > 70 else "ACCUMULATION", 0.91 if not degraded else 0.35, f"RSI(14) at {rsi_check:.1f}. Volume Z-Score at +{vol_check}σ denotes anomalous institutional accumulation.", 38.4, ["NSE Level-2 Order Stream", "Tick Telemetry V4"], degraded),
             MockAgentOutput("RegulatoryRAGAgent", "SEBI Statutory Filings RAG", "GROUNDED_VERIFIED", 0.94 if not degraded else 0.40, f"Verified corporate filing for {ticker}: 0.0% promoter pledge, clean debt covenants, and audited revenue disclosures.", 64.2, [f"SEBI-{ticker}-2026-Q3", f"SEBI-{ticker}-CAPEX-AUDIT"], degraded),
-            MockAgentOutput("SentimentFlowAgent", "FII / DII & Derivatives Skew", "BULLISH_INSTITUTIONAL", 0.86 if not degraded else 0.35, f"FII Net Inflow: ₹{market_data['fii_flow']} Cr | Options PCR: {market_data['pcr']:.2f}. Institutional call-writing support active.", 31.8, ["NSE Derivatives Disclosures", "FII Daily Bulletin"], degraded)
+            MockAgentOutput("SentimentFlowAgent", "FII / DII & Derivatives Skew", "BULLISH_INSTITUTIONAL", 0.86 if not degraded else 0.35, f"FII Net Inflow: ₹{fii_check} Cr | Options PCR: {pcr_check:.2f}. Institutional call-writing support active.", 31.8, ["NSE Derivatives Disclosures", "FII Daily Bulletin"], degraded)
         ]
         
         synthesis = {
@@ -144,13 +146,13 @@ except ImportError:
         }
 
 # ============================================================================
-# 2. PAGE CONFIG & OBSIDIAN 5-COLOR CHROMATIC HUD STYLING
+# 2. PAGE CONFIGURATION & GRAND OBSIDIAN UI STYLING (NO SIDEBAR)
 # ============================================================================
 st.set_page_config(
     page_title="SPIDER-SENSE // Autonomous Swarm Command",
     page_icon="🕸️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 st.markdown("""
@@ -163,13 +165,17 @@ html, body, [class*="css"] {
     color: #F8FAFC;
 }
 
+/* Hide Streamlit default sidebar entirely */
+[data-testid="stSidebar"] { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
+
 /* Deep Obsidian Matrix Background */
 .stApp {
     background-color: #010307;
     background-image: 
         radial-gradient(circle at 5% 0%, rgba(255, 30, 66, 0.25) 0%, transparent 35%),
         radial-gradient(circle at 95% 0%, rgba(0, 245, 255, 0.22) 0%, transparent 35%),
-        radial-gradient(circle at 50% 12%, rgba(176, 38, 255, 0.20) 0%, transparent 45%),
+        radial-gradient(circle at 50% 10%, rgba(176, 38, 255, 0.20) 0%, transparent 45%),
         radial-gradient(circle at 50% 100%, rgba(0, 255, 157, 0.16) 0%, transparent 45%),
         radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
     background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 28px 28px;
@@ -181,62 +187,6 @@ html, body, [class*="css"] {
     max-width: 1440px;
 }
 
-/* Sidebar Custom Styling */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #040711 0%, #020409 100%) !important;
-    border-right: 2px solid #1E293B !important;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8) !important;
-}
-
-.sidebar-brand-box {
-    background: linear-gradient(135deg, rgba(8, 14, 28, 0.95) 0%, rgba(3, 5, 12, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 3.5px solid #FF1E42;
-    border-bottom: 2px solid #B026FF;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 18px;
-    text-align: center;
-}
-
-.sidebar-title {
-    font-family: 'Syne', sans-serif !important;
-    font-size: 1.6rem;
-    font-weight: 900;
-    line-height: 1.1;
-    background: linear-gradient(90deg, #FFFFFF 10%, #00F5FF 40%, #B026FF 70%, #FF1E42 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.sidebar-section-header {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #00F5FF;
-    margin: 16px 0 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.sidebar-section-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(0, 245, 255, 0.4), transparent);
-}
-
-.sidebar-kpi-card {
-    background: #050914;
-    border: 1px solid #1E293B;
-    border-left: 3px solid #00FF9D;
-    border-radius: 10px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-}
-
 /* Top Navbar Header */
 .tactical-navbar {
     background: linear-gradient(135deg, rgba(8, 14, 28, 0.96) 0%, rgba(3, 5, 12, 0.98) 100%);
@@ -244,7 +194,7 @@ section[data-testid="stSidebar"] {
     border-top: 4px solid #FF1E42;
     border-bottom: 2.5px solid #B026FF;
     border-radius: 18px;
-    padding: 18px 26px;
+    padding: 20px 28px;
     margin-bottom: 16px;
     box-shadow: 0 20px 45px rgba(0,0,0,0.9);
     display: flex;
@@ -256,7 +206,7 @@ section[data-testid="stSidebar"] {
 
 .brand-title {
     font-family: 'Syne', sans-serif !important;
-    font-size: 2.2rem;
+    font-size: 2.4rem;
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -283,6 +233,17 @@ section[data-testid="stSidebar"] {
 .ticker-item { display: flex; gap: 6px; align-items: center; }
 .ticker-up { color: #00FF9D; font-weight: 700; }
 .ticker-down { color: #FF1E42; font-weight: 700; }
+
+/* Control Hub Container */
+.control-hub-box {
+    background: linear-gradient(135deg, rgba(8, 14, 28, 0.94) 0%, rgba(3, 6, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #B026FF;
+    border-radius: 18px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.7);
+}
 
 /* Tabs Styling */
 .stTabs [data-baseweb="tab-list"] {
@@ -417,39 +378,39 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     color: #F8FAFC !important;
 }
 
-/* Sidebar Custom Action Button */
+/* Main Action Button */
 div.stButton > button {
     font-family: 'Syne', sans-serif !important;
-    font-size: 1.05rem !important;
+    font-size: 1.1rem !important;
     font-weight: 800 !important;
     letter-spacing: 0.05em !important;
     background: linear-gradient(90deg, #FF1E42 0%, #B026FF 50%, #00F5FF 100%) !important;
     color: #FFFFFF !important;
     border: none !important;
-    border-radius: 12px !important;
-    padding: 0.85rem 1.8rem !important;
-    box-shadow: 0 6px 25px rgba(176, 38, 255, 0.5) !important;
+    border-radius: 14px !important;
+    padding: 0.95rem 2.2rem !important;
+    box-shadow: 0 8px 30px rgba(176, 38, 255, 0.5) !important;
     transition: all 0.25s ease !important;
     width: 100%;
 }
 div.stButton > button:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 10px 35px rgba(0, 245, 255, 0.8) !important;
+    box-shadow: 0 12px 40px rgba(0, 245, 255, 0.8) !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# GRAPH GENERATION HELPERS (Plotly Interactive & Native Fallbacks)
+# GRAPH BUILDERS WITH STRICT KEY FALLBACKS
 # ---------------------------------------------------------------------------
 def create_price_history_chart(ticker, base_price, rsi_val):
     dates = pd.date_range(end=pd.Timestamp.today(), periods=30, freq='D')
     np.random.seed(abs(hash(ticker)) % 1000)
-    noise = np.random.normal(0, base_price * 0.015, 30)
-    prices = [base_price * 0.90]
+    noise = np.random.normal(0, max(1.0, float(base_price) * 0.015), 30)
+    prices = [float(base_price) * 0.90]
     for n in noise[1:]:
-        prices.append(max(10.0, prices[-1] + n + (base_price * 0.003)))
-    prices[-1] = base_price
+        prices.append(max(10.0, prices[-1] + n + (float(base_price) * 0.003)))
+    prices[-1] = float(base_price)
     
     df_chart = pd.DataFrame({"Date": dates, "Price": prices})
     
@@ -479,7 +440,6 @@ def create_price_history_chart(ticker, base_price, rsi_val):
 def create_agent_radar_chart(outputs):
     categories = [o.agent.replace("Agent", "") for o in outputs]
     confidences = [o.confidence * 100 for o in outputs]
-    latencies = [100 - min(100, o.latency_ms) for o in outputs]
     
     if HAS_PLOTLY:
         fig = go.Figure()
@@ -521,7 +481,7 @@ def create_portfolio_donut(portfolio):
     return pd.DataFrame(list(portfolio.items()), columns=["Asset", "Value"]).set_index("Asset")
 
 # ---------------------------------------------------------------------------
-# State & Corpus Initialization
+# State Initialization
 # ---------------------------------------------------------------------------
 @st.cache_resource
 def get_rag_index():
@@ -534,80 +494,14 @@ if "has_run" not in st.session_state:
     st.session_state.has_run = False
 
 # ---------------------------------------------------------------------------
-# SIDEBAR: PARAMETERS & REAL-TIME SYSTEM BENCHMARKS
-# ---------------------------------------------------------------------------
-with st.sidebar:
-    st.markdown("""
-    <div class="sidebar-brand-box">
-        <div class="sidebar-title">🕷️ SPIDER-SENSE</div>
-        <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 4px; font-weight: 600;">
-            AUTONOMOUS MULTI-AGENT SWARM
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="sidebar-section-header">Target Parameters</div>', unsafe_allow_html=True)
-    ticker = st.selectbox("Target Equity Asset", TICKERS, index=0)
-    profile_name = st.selectbox("Investor Persona Profile", list(RISK_PROFILES.keys()), index=1)
-    
-    st.markdown('<div class="sidebar-section-header">Simulation & Chaos</div>', unsafe_allow_html=True)
-    scenario = st.selectbox("Market Feed Scenario", ["normal", "crash", "positive_news", "negative_news"])
-    degrade = st.selectbox("Chaos Fault-Injection", ["none", "momentum", "volume", "sentiment"])
-
-    st.write("")
-    run_swarm = st.button("🚀 DISPATCH SWARM", use_container_width=True)
-
-    if run_swarm or not st.session_state.has_run:
-        crash = (scenario == "crash")
-        market_data = generate_market_data(ticker, crash=crash)
-        news_sentiment = "positive" if scenario == "positive_news" else "negative" if scenario == "negative_news" else "mixed"
-        news = generate_news(ticker, news_sentiment)
-
-        outputs, synthesis = run_pipeline(
-            ticker, market_data, news, rag_index, profile_name,
-            simulate_degraded=None if degrade == "none" else degrade,
-        )
-        
-        forward_return_mock = random.uniform(-8, 8)
-        row = log_session(ticker, profile_name, outputs, synthesis, forward_return_mock, portfolio)
-
-        st.session_state.has_run = True
-        st.session_state.outputs = outputs
-        st.session_state.synthesis = synthesis
-        st.session_state.row = row
-        st.session_state.ticker = ticker
-        st.session_state.profile_name = profile_name
-        st.session_state.market_data = market_data
-        st.session_state.news = news
-        st.session_state.degrade = degrade
-
-    st.markdown('<div class="sidebar-section-header">Swarm Infrastructure</div>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="sidebar-kpi-card">
-        <div style="font-family:'JetBrains Mono'; font-size:0.68rem; color:#64748B;">ORCHESTRATION PIPELINE</div>
-        <div style="font-family:'Syne'; font-size:0.92rem; font-weight:800; color:#00FF9D;">3 ASYNC PARALLEL DESKS</div>
-    </div>
-    <div class="sidebar-kpi-card" style="border-left-color: #00F5FF;">
-        <div style="font-family:'JetBrains Mono'; font-size:0.68rem; color:#64748B;">RAG VECTOR CORPUS</div>
-        <div style="font-family:'Syne'; font-size:0.92rem; font-weight:800; color:#00F5FF;">STATUTORY SEBI DISCLOSURES</div>
-    </div>
-    <div class="sidebar-kpi-card" style="border-left-color: #B026FF;">
-        <div style="font-family:'JetBrains Mono'; font-size:0.68rem; color:#64748B;">CHAOS TELEMETRY</div>
-        <div style="font-family:'Syne'; font-size:0.92rem; font-weight:800; color:#{'#FF1E42' if degrade != 'none' else '#D8B4FE'};">
-            {'FAULT INJECTION ACTIVE' if degrade != 'none' else 'NOMINAL FEED'}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ---------------------------------------------------------------------------
-# MAIN WORKSPACE: HEADER & TICKER
+# HEADER & TICKER
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="tactical-navbar">
     <div>
         <div class="brand-title">🕷️ SPIDER-SENSE FINANCIAL</div>
         <div style="color: #94A3B8; font-size: 0.9rem; margin-top: 5px; font-weight: 500;">
-            Multi-Agent Autonomous Financial Intelligence Network // Explainable Retail Research Infrastructure
+            Multi-Agent Autonomous Financial Intelligence Network // Grounded Retail Infrastructure
         </div>
     </div>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -629,6 +523,47 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
+# MAIN COMMAND CONTROL DECK (TOP PANEL - NO SIDEBAR)
+# ---------------------------------------------------------------------------
+st.markdown('<div class="control-hub-box">', unsafe_allow_html=True)
+c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 1.2])
+with c1:
+    ticker = st.selectbox("Target Equity Asset", TICKERS, index=0)
+with c2:
+    profile_name = st.selectbox("Investor Persona Profile", list(RISK_PROFILES.keys()), index=1)
+with c3:
+    scenario = st.selectbox("Market Feed Scenario", ["normal", "crash", "positive_news", "negative_news"])
+with c4:
+    degrade = st.selectbox("Chaos Fault-Injection", ["none", "momentum", "volume", "sentiment"])
+
+st.write("")
+if st.button("🚀 DISPATCH MULTI-AGENT SWARM", use_container_width=True) or not st.session_state.has_run:
+    crash = (scenario == "crash")
+    market_data = generate_market_data(ticker, crash=crash)
+    news_sentiment = "positive" if scenario == "positive_news" else "negative" if scenario == "negative_news" else "mixed"
+    news = generate_news(ticker, news_sentiment)
+
+    outputs, synthesis = run_pipeline(
+        ticker, market_data, news, rag_index, profile_name,
+        simulate_degraded=None if degrade == "none" else degrade,
+    )
+    
+    forward_return_mock = random.uniform(-8, 8)
+    row = log_session(ticker, profile_name, outputs, synthesis, forward_return_mock, portfolio)
+
+    st.session_state.has_run = True
+    st.session_state.outputs = outputs
+    st.session_state.synthesis = synthesis
+    st.session_state.row = row
+    st.session_state.ticker = ticker
+    st.session_state.profile_name = profile_name
+    st.session_state.market_data = market_data
+    st.session_state.news = news
+    st.session_state.degrade = degrade
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
 # WORKSPACE DISPLAY TABS
 # ---------------------------------------------------------------------------
 outputs = st.session_state.outputs
@@ -637,6 +572,14 @@ row = st.session_state.row
 m_ticker = st.session_state.ticker
 m_profile = st.session_state.profile_name
 m_data = st.session_state.market_data
+
+# Extract values defensively using safe fallbacks
+price_val = float(m_data.get("price", m_data.get("current_price", 2500.0)))
+rsi_val = float(m_data.get("rsi", m_data.get("rsi_14", 60.0)))
+vol_zscore_val = float(m_data.get("vol_zscore", m_data.get("volume_zscore", 2.5)))
+fii_flow_val = float(m_data.get("fii_flow", m_data.get("fii_flow_crores", 450.0)))
+pcr_val = float(m_data.get("pcr", m_data.get("options_pcr", 1.25)))
+change_pct_val = float(m_data.get("change_pct", 2.4))
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🎯 Master Verdict & Interactive Charts",
@@ -676,7 +619,7 @@ with tab1:
     
     g_col1, g_col2 = st.columns([2.2, 1])
     with g_col1:
-        chart_obj = create_price_history_chart(m_ticker, m_data["price"], m_data["rsi"])
+        chart_obj = create_price_history_chart(m_ticker, price_val, rsi_val)
         if HAS_PLOTLY:
             st.plotly_chart(chart_obj, use_container_width=True, config={'displayModeBar': False})
         else:
@@ -685,10 +628,10 @@ with tab1:
         st.markdown(f"""
         <div style="background:#050914; border:1px solid #1E293B; border-radius:12px; padding:16px; height:100%;">
             <div style="font-family:'Syne'; font-size:0.95rem; font-weight:800; color:#00F5FF; margin-bottom:12px;">EXECUTION METRICS</div>
-            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Live Tick: <strong style="color:#FFF;">₹{m_data['price']:,.2f}</strong> ({m_data['change_pct']:+.2f}%)</div>
-            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">RSI (14D): <strong style="color:{'#FF1E42' if m_data['rsi']>70 else '#00FF9D'};">{m_data['rsi']:.1f}</strong></div>
-            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Vol Anomaly: <strong style="color:#FFF;">+{m_data['vol_zscore']}σ</strong></div>
-            <div style="font-size:0.82rem; color:#94A3B8;">Options PCR: <strong style="color:#FFF;">{m_data['pcr']:.2f}</strong></div>
+            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Live Tick: <strong style="color:#FFF;">₹{price_val:,.2f}</strong> ({change_pct_val:+.2f}%)</div>
+            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">RSI (14D): <strong style="color:{'#FF1E42' if rsi_val>70 else '#00FF9D'};">{rsi_val:.1f}</strong></div>
+            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Vol Anomaly: <strong style="color:#FFF;">+{vol_zscore_val}σ</strong></div>
+            <div style="font-size:0.82rem; color:#94A3B8;">Options PCR: <strong style="color:#FFF;">{pcr_val:.2f}</strong></div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -708,7 +651,6 @@ with tab2:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
     st.markdown('<div class="sp-card-header"><span>Specialized Domain Agents // Real-Time Telemetry</span><span style="font-size:0.85rem; color:#64748B;">Parallel Async Pipeline (< 150ms)</span></div>', unsafe_allow_html=True)
     
-    # Visual Agent Confidence Bar Chart
     radar_obj = create_agent_radar_chart(outputs)
     if HAS_PLOTLY:
         st.plotly_chart(radar_obj, use_container_width=True, config={'displayModeBar': False})
@@ -772,7 +714,7 @@ with tab3:
         )
         is_active = (pname == m_profile)
         action_col = "#00FF9D" if "BUY" in syn2['action'] else ("#FF1E42" if "REDUCE" in syn2['action'] or "AVOID" in syn2['action'] else "#00F5FF")
-        p_info = RISK_PROFILES[pname]
+        p_info = RISK_PROFILES.get(pname, {"risk": "MODERATE", "max_drawdown": "15.0%"})
         
         with c:
             st.markdown(f"""
@@ -787,7 +729,7 @@ with tab3:
                         </span>
                     </div>
                     <div style="font-size:0.75rem; color:#94A3B8; margin-top:4px;">
-                        Risk Tier: <strong style="color:#FFF;">{p_info['risk']}</strong> | Loss Limit: <strong style="color:#FF1E42;">{p_info['max_drawdown']}</strong>
+                        Risk Tier: <strong style="color:#FFF;">{p_info.get('risk', 'N/A')}</strong> | Loss Limit: <strong style="color:#FF1E42;">{p_info.get('max_drawdown', 'N/A')}</strong>
                     </div>
                     <div style="font-family:'Syne'; font-size:1.35rem; font-weight:800; color:{action_col}; margin:14px 0 6px 0;">
                         {syn2['action']}
@@ -819,7 +761,7 @@ with tab4:
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-family:'Syne'; font-size:1.1rem; font-weight:700; color:#D8B4FE;">
                         📄 SEBI Statutory Corpus Chunk: {c}
-                    </span>
+                    </div>
                     <span style="font-family:'JetBrains Mono'; font-size:0.7rem; color:#00FF9D; background:rgba(0,255,157,0.1); padding:2px 8px; border-radius:4px; border:1px solid rgba(0,255,157,0.3);">
                         VERIFIED AUDIT
                     </span>
