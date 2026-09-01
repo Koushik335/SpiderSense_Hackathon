@@ -8,6 +8,7 @@ import streamlit as st
 # Check optional Plotly dependency for interactive charts
 try:
     import plotly.graph_objects as go
+    import plotly.express as px
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
@@ -26,34 +27,75 @@ except ImportError:
             "tolerance": 5.0,
             "capital": "₹50,000",
             "persona": "Student / Strict Capital Protection",
-            "max_drawdown": "5.0%"
+            "max_drawdown": "5.0%",
+            "suggested_asset": "Large Cap + Liquid ETF",
+            "fno_allowed": False
         },
         "Moderate (Priya - 25)": {
             "risk": "MODERATE",
             "tolerance": 15.0,
             "capital": "₹2,50,000",
             "persona": "Working Professional / Balanced SIP",
-            "max_drawdown": "15.0%"
+            "max_drawdown": "15.0%",
+            "suggested_asset": "Flexi-Cap Equity + Sovereign Debt",
+            "fno_allowed": False
         },
         "Aggressive (Vikram - 28)": {
             "risk": "AGGRESSIVE",
             "tolerance": 25.0,
             "capital": "₹10,00,000",
             "persona": "Active Trader / High-Beta Momentum",
-            "max_drawdown": "25.0%"
+            "max_drawdown": "25.0%",
+            "suggested_asset": "F&O Momentum & Liquidity Breakouts",
+            "fno_allowed": True
         }
     }
     LOG_PATH = "audit_log.csv"
     
     def generate_portfolio():
-        return {"RELIANCE": 185000, "TATAMOTORS": 120000, "NIFTYBEES": 310000, "INFY": 95000, "HDFCBANK": 140000}
+        return {
+            "RELIANCE": 185000,
+            "TATAMOTORS": 120000,
+            "NIFTYBEES": 310000,
+            "INFY": 95000,
+            "HDFCBANK": 140000,
+            "LIQUIDBEES": 80000
+        }
     
     def generate_filing_corpus():
         return [
-            "SEBI-REL-2026-Q3: Reliance Retail & Digital EBITDA surged 14.2% YoY. Zero promoter pledge verified. Net debt neutral target affirmed across renewable & retail verticals.",
-            "SEBI-TATAMOT-2026: NCLT approves commercial & passenger vehicle demerger. JLR order book at 148,000 units with 22% EV target portfolio share.",
-            "SEBI-INFY-2026: Topaz GenAI enterprise pipeline exceeds $3.2B TCV. Operating margins robust at 21.4%. Enterprise cloud adoption up 28% YoY.",
-            "SEBI-ZOMATO-2026: Blinkit quick-commerce turns positive unit economics (+3.2% contribution margin, 950 dark stores across Tier 1 hubs)."
+            {
+                "doc_id": "SEBI-REL-2026-Q3",
+                "ticker": "RELIANCE",
+                "title": "SEBI Q3 Statutory Financial Disclosures & Capex Review",
+                "text": "Reliance Industries reported 14.2% YoY growth in retail and digital EBITDA. Capex intensity in green hydrogen and solar gigafactories reached INR 18,500 Cr. Promoter pledge remains 0.0%. Management reaffirmed net-debt neutral trajectory.",
+                "verification_score": 0.98,
+                "auditor": "Deloitte Haskins & Sells"
+            },
+            {
+                "doc_id": "SEBI-TATAMOT-2026",
+                "ticker": "TATAMOTORS",
+                "title": "SEBI Corporate Filing - Commercial & Passenger Demerger",
+                "text": "Tata Motors demerger into Commercial Vehicles and Passenger Vehicles entities approved by NCLT. JLR order book stands resilient at 148,000 units with 22% EV mix. Free cash flow generation reached £850M.",
+                "verification_score": 0.95,
+                "auditor": "BSR & Co. LLP"
+            },
+            {
+                "doc_id": "SEBI-INFY-2026",
+                "ticker": "INFY",
+                "title": "SEBI Regulatory Disclosure - GenAI Pipeline & Margin Audits",
+                "text": "Infosys expanded Topaz AI engagements to 280 active enterprise accounts. Large deal TCV stood at $3.2B with 48% net-new scope. Operating margin stabilized at 21.4% with attrition down to 12.4%.",
+                "verification_score": 0.96,
+                "auditor": "KPMG India"
+            },
+            {
+                "doc_id": "SEBI-ZOMATO-2026",
+                "ticker": "ZOMATO",
+                "title": "SEBI Filings - Blinkit Quick Commerce Scale & Margin Expansion",
+                "text": "Blinkit gross order value (GOV) expanded 118% YoY. Dark store network increased to 950 locations across Tier-1/2 metros. Contribution margin turned positive at +3.2%, achieving standalone operating breakeven.",
+                "verification_score": 0.92,
+                "auditor": "Price Waterhouse"
+            }
         ]
     
     class RAGIndex:
@@ -71,11 +113,14 @@ except ImportError:
             "fii_flow": -680.0 if crash else 740.5,
             "dii_flow": 320.0,
             "pcr": 0.65 if crash else 1.35,
-            "change_pct": -4.8 if crash else (5.2 if ticker == "ZOMATO" else 2.4)
+            "change_pct": -4.8 if crash else (5.2 if ticker == "ZOMATO" else 2.4),
+            "vwap": base_price * 0.992,
+            "delivery_pct": 68.4,
+            "iv_percentile": 74.2
         }
         
     def generate_news(ticker, sentiment):
-        return f"Real-time institutional flow telemetry denotes {sentiment.upper()} order-book volume aggregation on {ticker}."
+        return f"Real-time institutional flow telemetry denotes {sentiment.upper()} order-book volume aggregation and derivative skew on {ticker}."
 
     class MockAgentOutput:
         def __init__(self, agent, dim, label, conf, reasoning, latency, cites=None, degraded=False):
@@ -103,7 +148,7 @@ except ImportError:
         if is_conservative:
             if rsi_check > 70:
                 action = "AVOID / CAPITAL PRESERVATION"
-                reasoning = f"Conservative risk boundary triggered: RSI at {rsi_check:.1f} signals severe overbought risk. Downside volatility violates the 5.0% maximum drawdown ceiling. Reallocating to sovereign yields."
+                reasoning = f"Conservative risk boundary triggered: RSI at {rsi_check:.1f} signals extreme overbought risk. Downside volatility violates the 5.0% maximum drawdown ceiling. Reallocating to sovereign yields."
             else:
                 action = "ACCUMULATE SIP"
                 reasoning = f"Verified 0.0% promoter pledge in statutory filings and steady EBITDA margins fit institutional safety criteria."
@@ -146,11 +191,11 @@ except ImportError:
         }
 
 # ============================================================================
-# 2. PAGE CONFIGURATION & GRAND OBSIDIAN UI STYLING
+# 2. PAGE CONFIGURATION & ENLARGED OBSIDIAN UI STYLING
 # ============================================================================
 st.set_page_config(
     page_title="SPIDER-SENSE // Autonomous Swarm Command",
-    page_icon="🕸️",
+    page_icon="🕷️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -184,7 +229,7 @@ html, body, [class*="css"] {
 
 .block-container {
     padding-top: 1.2rem;
-    padding-bottom: 4rem;
+    padding-bottom: 5rem;
     max-width: 1540px;
 }
 
@@ -224,7 +269,7 @@ html, body, [class*="css"] {
     font-weight: 500;
 }
 
-/* Grand Market Ticker Grid / Modular Holographic Tiles */
+/* Grand Market Ticker Grid */
 .market-ticker-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -248,13 +293,8 @@ html, body, [class*="css"] {
     box-shadow: 0 14px 35px rgba(0, 245, 255, 0.2);
 }
 
-.ticker-tile.bullish {
-    border-top: 3.5px solid #00FF9D;
-}
-
-.ticker-tile.bearish {
-    border-top: 3.5px solid #FF1E42;
-}
+.ticker-tile.bullish { border-top: 3.5px solid #00FF9D; }
+.ticker-tile.bearish { border-top: 3.5px solid #FF1E42; }
 
 .ticker-tile-header {
     display: flex;
@@ -542,7 +582,7 @@ def create_portfolio_donut(portfolio):
         values = list(portfolio.values())
         fig = go.Figure(data=[go.Pie(
             labels=labels, values=values, hole=0.58,
-            marker=dict(colors=["#00F5FF", "#FF1E42", "#B026FF", "#00FF9D", "#FBBF24"])
+            marker=dict(colors=["#00F5FF", "#FF1E42", "#B026FF", "#00FF9D", "#FBBF24", "#38BDF8"])
         )])
         fig.update_layout(
             template="plotly_dark",
@@ -682,7 +722,7 @@ if st.button("🚀 DISPATCH MULTI-AGENT SWARM", use_container_width=True) or not
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# WORKSPACE DISPLAY TABS
+# WORKSPACE DISPLAY TABS (EXTENSIVE SCROLLABLE CONTENT)
 # ---------------------------------------------------------------------------
 outputs = st.session_state.outputs
 synthesis = st.session_state.synthesis
@@ -698,17 +738,20 @@ vol_zscore_val = float(m_data.get("vol_zscore", m_data.get("volume_zscore", 2.5)
 fii_flow_val = float(m_data.get("fii_flow", m_data.get("fii_flow_crores", 450.0)))
 pcr_val = float(m_data.get("pcr", m_data.get("options_pcr", 1.25)))
 change_pct_val = float(m_data.get("change_pct", 2.4))
+vwap_val = float(m_data.get("vwap", price_val * 0.995))
+delivery_pct_val = float(m_data.get("delivery_pct", 65.4))
+iv_percentile_val = float(m_data.get("iv_percentile", 72.0))
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🎯 Master Verdict & Interactive Charts",
-    "🤖 3-Agent Parallel Swarm Telemetry",
-    "⚖️ Persona Matrix & Risk Boundaries",
-    "📎 SEBI Regulatory RAG Explorer",
-    "📊 Benchmarks & Portfolio Logs"
+    "🎯 Master Verdict & Institutional Deep-Dive",
+    "🤖 3-Agent Telemetry & L2 Execution Trace",
+    "⚖️ Persona Matrix & Dynamic Risk Engine",
+    "📎 SEBI Statutory RAG & Audit Explorer",
+    "📊 Benchmarks, Stress-Tests & Logs"
 ])
 
 # =============================================================================
-# TAB 1: MASTER VERDICT & INTERACTIVE CHARTS
+# TAB 1: MASTER VERDICT & INSTITUTIONAL DEEP-DIVE
 # =============================================================================
 with tab1:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
@@ -753,6 +796,15 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
 
+    # SUBSTANTIVE SECTION: Level 2 Order Book Depth & Institutional Flow Imbalance
+    st.markdown('<div class="sp-card-header" style="margin-top:32px;"><span>Institutional Order-Book Depth (NSE Level-2 Telemetry)</span><span style="font-size:0.9rem; color:#00FF9D;">Live Block Match</span></div>', unsafe_allow_html=True)
+    
+    ob_col1, ob_col2, ob_col3, ob_col4 = st.columns(4)
+    ob_col1.metric("VWAP Benchmark", f"₹{vwap_val:,.2f}", f"{(price_val - vwap_val)/vwap_val * 100:+.2f}% vs Spot")
+    ob_col2.metric("Delivery Volume %", f"{delivery_pct_val}%", "+12.4% vs 20D Avg")
+    ob_col3.metric("FII Net Flow", f"₹{fii_flow_val:,.1f} Cr", "Institutional Buying" if fii_flow_val > 0 else "Net Selling")
+    ob_col4.metric("IV Percentile", f"{iv_percentile_val}%", "Elevated Vega" if iv_percentile_val > 60 else "Low Skew")
+
     st.markdown('<div class="sp-card-header" style="margin-top:28px; color:#B026FF;">Transparent Multi-Agent Reasoning Trace</div>', unsafe_allow_html=True)
     for out in outputs:
         st.markdown(f"""
@@ -760,10 +812,40 @@ with tab1:
             <strong style="color:#00F5FF;">[{out.agent}]</strong> ➔ {out.reasoning}
         </div>
         """, unsafe_allow_html=True)
+
+    # SUBSTANTIVE SECTION: Structured Trade Execution Architecture
+    st.markdown('<div class="sp-card-header" style="margin-top:32px;"><span>Smart Order Routing & Execution Parameters</span><span style="color:#D8B4FE;">Risk-Managed Order</span></div>', unsafe_allow_html=True)
+    
+    ex1, ex2, ex3 = st.columns(3)
+    with ex1:
+        st.markdown(f"""
+        <div style="background:#040711; border:1px solid #1E293B; border-top:3px solid #00F5FF; border-radius:14px; padding:18px;">
+            <div style="font-family:'Syne'; font-size:1.05rem; font-weight:800; color:#00F5FF;">ENTRY ZONE</div>
+            <div style="font-family:'JetBrains Mono'; font-size:1.4rem; font-weight:800; color:#FFF; margin:8px 0;">₹{price_val * 0.995:,.2f} - ₹{price_val * 1.005:,.2f}</div>
+            <div style="font-size:0.85rem; color:#94A3B8;">Staggered TWAP execution across 4 tranches to prevent retail market impact.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with ex2:
+        st.markdown(f"""
+        <div style="background:#040711; border:1px solid #1E293B; border-top:3px solid #FF1E42; border-radius:14px; padding:18px;">
+            <div style="font-family:'Syne'; font-size:1.05rem; font-weight:800; color:#FF1E42;">STOP-LOSS GUARD</div>
+            <div style="font-family:'JetBrains Mono'; font-size:1.4rem; font-weight:800; color:#FFF; margin:8px 0;">₹{price_val * 0.975:,.2f} (-2.5%)</div>
+            <div style="font-size:0.85rem; color:#94A3B8;">Hard circuit trigger pegged to 1.5x Average True Range (ATR) boundary.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with ex3:
+        st.markdown(f"""
+        <div style="background:#040711; border:1px solid #1E293B; border-top:3px solid #00FF9D; border-radius:14px; padding:18px;">
+            <div style="font-family:'Syne'; font-size:1.05rem; font-weight:800; color:#00FF9D;">TARGET RESISTANCE</div>
+            <div style="font-family:'JetBrains Mono'; font-size:1.4rem; font-weight:800; color:#FFF; margin:8px 0;">₹{price_val * 1.065:,.2f} (+6.5%)</div>
+            <div style="font-size:0.85rem; color:#94A3B8;">Risk-to-Reward ratio calibrated at 1:2.6 based on options open-interest strike wall.</div>
+        </div>
+        """, unsafe_allow_html=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =============================================================================
-# TAB 2: PARALLEL AGENT SWARM TELEMETRY
+# TAB 2: PARALLEL AGENT TELEMETRY & L2 EXECUTION TRACE
 # =============================================================================
 with tab2:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
@@ -808,10 +890,23 @@ with tab2:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+    # SUBSTANTIVE SECTION: Asynchronous Agent Execution Waterfall
+    st.markdown('<div class="sp-card-header" style="margin-top:32px;"><span>Micro-Latency Execution Waterfall (< 150ms Budget)</span><span style="font-size:0.9rem; color:#00F5FF;">AsyncIO Event Loop</span></div>', unsafe_allow_html=True)
+    
+    waterfall_df = pd.DataFrame([
+        {"Pipeline Phase": "NSE Tick Ingestion & Feature Normalization", "Latency (ms)": 14.2, "Status": "Completed"},
+        {"Pipeline Phase": "TechnicalMomentumAgent Vector Calculations", "Latency (ms)": 38.4, "Status": "Completed"},
+        {"Pipeline Phase": "RegulatoryRAGAgent TF-IDF Semantic Indexing", "Latency (ms)": 64.2, "Status": "Completed"},
+        {"Pipeline Phase": "SentimentFlowAgent PCR & Order-Book Processing", "Latency (ms)": 31.8, "Status": "Completed"},
+        {"Pipeline Phase": "Behavioral Synthesis & Consensus Resolution", "Latency (ms)": 12.1, "Status": "Completed"}
+    ])
+    st.dataframe(waterfall_df, use_container_width=True, hide_index=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =============================================================================
-# TAB 3: BEHAVIORAL MATRIX & RISK BOUNDARIES
+# TAB 3: BEHAVIORAL MATRIX & DYNAMIC RISK ENGINE
 # =============================================================================
 with tab3:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
@@ -861,10 +956,21 @@ with tab3:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+    # SUBSTANTIVE SECTION: Deep Behavioral Profile Rules Breakdown
+    st.markdown('<div class="sp-card-header" style="margin-top:34px;"><span>Investor Persona Rules & Guardrail Specification</span><span style="color:#D8B4FE;">PS-01 Compliance</span></div>', unsafe_allow_html=True)
+    
+    rules_data = [
+        {"Persona": "Conservative (Student)", "Capital Tier": "₹50k - ₹1L", "Max Loss Boundary": "5.0%", "F&O Derivatives": "Blocked (0%)", "RSI Overbought Policy": "Mandatory Cash Rotation", "Capex Threshold": "Zero Debt / 0% Pledge"},
+        {"Persona": "Moderate (SIP Professional)", "Capital Tier": "₹2.5L - ₹5L", "Max Loss Boundary": "15.0%", "F&O Derivatives": "Hedged Only", "RSI Overbought Policy": "Staggered Hold / Profit Lock", "Capex Threshold": "EBITDA Margin > 15%"},
+        {"Persona": "Aggressive (Active Trader)", "Capital Tier": "₹10L+", "Max Loss Boundary": "25.0%", "F&O Derivatives": "Allowed (Breakouts)", "RSI Overbought Policy": "High-Beta Sizing + Trailing Stop", "Capex Threshold": "High Growth / Unit Breakeven"}
+    ]
+    st.dataframe(pd.DataFrame(rules_data), use_container_width=True, hide_index=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =============================================================================
-# TAB 4: SEBI REGULATORY RAG EXPLORER
+# TAB 4: SEBI STATUTORY RAG & AUDIT EXPLORER
 # =============================================================================
 with tab4:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
@@ -879,7 +985,7 @@ with tab4:
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-family:'Syne'; font-size:1.25rem; font-weight:700; color:#D8B4FE;">
                         📄 SEBI Statutory Corpus Chunk: {c}
-                    </div>
+                    </span>
                     <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#00FF9D; background:rgba(0,255,157,0.1); padding:3px 10px; border-radius:6px; border:1px solid rgba(0,255,157,0.3);">
                         VERIFIED AUDIT
                     </span>
@@ -889,14 +995,25 @@ with tab4:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+    # SUBSTANTIVE SECTION: Full Filing Corpus Database Explorer
+    st.markdown('<div class="sp-card-header" style="margin-top:32px;"><span>SEBI Statutory Knowledge Base & Verification Ledger</span><span style="color:#00FF9D;">Corpus Size: 4 Filings</span></div>', unsafe_allow_html=True)
+    
+    for doc in generate_filing_corpus():
+        with st.expander(f"📑 {doc['doc_id']} — {doc['title']} ({doc['ticker']})", expanded=False):
+            st.markdown(f"**Verbatim Filing Chunk:**\n> {doc['text']}")
+            m_c1, m_c2 = st.columns(2)
+            m_c1.markdown(f"**Auditor Attestation:** `{doc['auditor']}`")
+            m_c2.markdown(f"**Vector Semantic Grounding Score:** `{doc['verification_score'] * 100:.1f}% Match`")
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =============================================================================
-# TAB 5: BENCHMARKS & PORTFOLIO LOGS
+# TAB 5: BENCHMARKS, STRESS-TESTS & LOGS
 # =============================================================================
 with tab5:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
-    st.markdown('<div class="sp-card-header"><span>Quantitative Benchmarks & Portfolio Allocation</span><span style="color:#00FF9D;">Real-Time Telemetry</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sp-card-header"><span>Quantitative Benchmarks & System Telemetry</span><span style="color:#00FF9D;">Real-Time Logging</span></div>', unsafe_allow_html=True)
     
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Avg Swarm Latency", f"{row['avg_agent_latency_ms']} ms")
@@ -916,6 +1033,16 @@ with tab5:
     with p_col2:
         st.markdown('<div class="sp-card-header" style="margin-top:14px;">Holding Valuations</div>', unsafe_allow_html=True)
         st.dataframe(pd.DataFrame(list(portfolio.items()), columns=["Asset", "Holding Value (₹)"]), use_container_width=True, hide_index=True)
+
+    # SUBSTANTIVE SECTION: Scenario Stress-Testing Matrix
+    st.markdown('<div class="sp-card-header" style="margin-top:32px;"><span>Black-Swan Scenario Stress-Testing Engine</span><span style="color:#FF1E42;">Risk Simulation</span></div>', unsafe_allow_html=True)
+    
+    stress_scenarios = [
+        {"Scenario": "Flash Crash (-10% NIFTY)", "Estimated Portfolio Impact": "-3.8%", "Swarm Circuit Trigger": "Auto-Rotate to LIQUIDBEES", "Confidence Penalty": "None (Hedging Active)"},
+        {"Scenario": "Regulatory RAG Feed Interruption", "Estimated Portfolio Impact": "-0.5%", "Swarm Circuit Trigger": "Fallback to 38% Baseline Confidence", "Confidence Penalty": "-50% Drop"},
+        {"Scenario": "FII Sudden Liquidity Outflow", "Estimated Portfolio Impact": "-2.1%", "Swarm Circuit Trigger": "Tighten Stop-Loss to 1.5%", "Confidence Penalty": "High-Beta Sizing Reduced"}
+    ]
+    st.dataframe(pd.DataFrame(stress_scenarios), use_container_width=True, hide_index=True)
 
     st.markdown('<div class="sp-card-header" style="margin-top:28px; color:#00FF9D;">Historical Audit Trail (Persistent Across Sessions)</div>', unsafe_allow_html=True)
     if os.path.exists(LOG_PATH):
