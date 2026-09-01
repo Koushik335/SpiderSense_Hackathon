@@ -1,4 +1,3 @@
-import math
 import os
 import random
 
@@ -8,326 +7,525 @@ import streamlit as st
 from pipeline import RAGIndex, RISK_PROFILES, LOG_PATH, run_pipeline, log_session
 from synthetic_data import TICKERS, generate_market_data, generate_news, generate_filing_corpus, generate_portfolio
 
+# ---------------------------------------------------------------------------
+# Page Configuration
+# ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Spider-Sense — Multi-Agent Investment Intelligence",
+    page_title="SPIDER-SENSE // Autonomous Financial Intelligence",
     page_icon="🕸️",
     layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 # ---------------------------------------------------------------------------
-# Reusable spiderweb SVG (corner decoration)
-# ---------------------------------------------------------------------------
-def spiderweb_svg(size=220, color="#8FF7D6", opacity=0.16, flip_x=False, flip_y=False):
-    scale_x = -1 if flip_x else 1
-    scale_y = -1 if flip_y else 1
-    tx = size if flip_x else 0
-    ty = size if flip_y else 0
-    rings = "".join(
-        f'<circle cx="0" cy="0" r="{r}" />' for r in (size*0.2, size*0.4, size*0.6, size*0.8, size)
-    )
-    spokes = "".join(
-        f'<line x1="0" y1="0" x2="{size*math.cos(a):.1f}" y2="{size*math.sin(a):.1f}" />'
-        for a in [i * (math.pi / 2) / 5 for i in range(6)]
-    )
-    return f"""
-    <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}"
-         style="position:absolute; top:0; left:0; opacity:{opacity}; pointer-events:none; z-index:0;">
-        <g transform="translate({tx},{ty}) scale({scale_x},{scale_y})"
-           stroke="{color}" stroke-width="1" fill="none">
-            {rings}
-            {spokes}
-        </g>
-    </svg>
-    """
-
-
-# ---------------------------------------------------------------------------
-# Global CSS (self-contained — no dependency on .streamlit/config.toml)
+# High-Impact Terminal / Glassmorphic CSS
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
-html, body, [class*="css"]  { font-family: 'Inter', sans-serif; }
-h1, h2, h3 { font-family: 'Space Grotesk', sans-serif !important; }
-
-/* Force the dark theme regardless of the visitor's browser/system preference,
-   since we are not shipping a .streamlit/config.toml */
+/* Global Reset */
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #F1F5F9;
+}
 .stApp {
-    background:
-        radial-gradient(circle at 8% 8%, rgba(143,247,214,0.06), transparent 30%),
-        radial-gradient(circle at 92% 15%, rgba(125,211,252,0.05), transparent 30%),
-        #060A0F;
-    color: #E6EDF3;
-}
-[data-testid="stSidebar"] { background: #0A0F14; }
-[data-testid="stHeader"] { background: rgba(0,0,0,0); }
-#MainMenu, footer { visibility: hidden; }
-
-.block-container { padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1200px; }
-
-/* Subtle tiled web-silk texture across the whole app */
-.stApp::before {
-    content: "";
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image:
-        repeating-linear-gradient(45deg, rgba(143,247,214,0.02) 0px, rgba(143,247,214,0.02) 1px, transparent 1px, transparent 60px),
-        repeating-linear-gradient(-45deg, rgba(125,211,252,0.02) 0px, rgba(125,211,252,0.02) 1px, transparent 1px, transparent 60px);
+    background-color: #060913;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(230, 36, 41, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(0, 240, 255, 0.08) 0px, transparent 50%),
+        radial-gradient(#1E293B 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px;
 }
 
-/* Hero */
-.hero {
-    position: relative;
-    overflow: hidden;
-    padding: 30px 34px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, rgba(143,247,214,0.10) 0%, rgba(10,15,20,0.6) 65%);
-    border: 1px solid rgba(143,247,214,0.22);
-    margin-bottom: 26px;
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 3.5rem;
+    max-width: 1320px;
 }
-.hero-content { position: relative; z-index: 1; }
-.hero h1 {
-    font-size: 2.2rem;
-    margin: 0 0 6px 0;
-    background: linear-gradient(90deg, #8FF7D6, #7DD3FC);
+
+/* Header / Hero */
+.hero-container {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 15, 29, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 3px solid #E62429;
+    border-radius: 14px;
+    padding: 24px 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 30px -10px rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.hero-title-group h1 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 2.1rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #FFFFFF 30%, #00F0FF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-.hero p { color: #94A6B5; margin: 0; font-size: 0.95rem; max-width: 640px; }
-.hero .tag {
-    display: inline-block; margin-top: 12px; padding: 4px 12px;
-    border-radius: 999px; background: rgba(143,247,214,0.10);
-    border: 1px solid rgba(143,247,214,0.3); color: #8FF7D6;
-    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em;
+.hero-title-group p {
+    color: #94A3B8;
+    margin: 4px 0 0 0;
+    font-size: 0.92rem;
+}
+.badge-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.hud-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: #0B1120;
+    color: #94A3B8;
+}
+.hud-pill.live {
+    border-color: rgba(0, 240, 255, 0.4);
+    background: rgba(0, 240, 255, 0.08);
+    color: #00F0FF;
 }
 
-/* Section labels */
-.section-label {
-    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: #7A8B9A; font-weight: 600; margin: 24px 0 10px 0;
-    display: flex; align-items: center; gap: 8px;
+/* Control Hub Container */
+.control-panel {
+    background: rgba(13, 19, 34, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
 }
-.section-label::before { content: "🕸️"; font-size: 0.85rem; opacity: 0.8; }
 
-/* Agent card */
-.agent-card {
-    position: relative; overflow: hidden;
-    border-radius: 14px; padding: 16px 18px; background: #0D141B;
-    border: 1px solid #1B2830; border-left: 4px solid var(--accent, #7A8B9A);
+/* Section Titles */
+.hud-heading {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #00F0FF;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0 12px 0;
+}
+.hud-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0,240,255,0.3), transparent);
+}
+
+/* Agent Card Design */
+.agent-grid-card {
+    background: #090E1A;
+    border: 1px solid #1E293B;
+    border-radius: 12px;
+    padding: 18px;
     height: 100%;
+    position: relative;
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
-.agent-card .name { font-weight: 600; font-size: 0.95rem; color: #E6EDF3; }
-.agent-card .badge {
-    float: right; font-size: 0.68rem; padding: 2px 8px; border-radius: 999px;
-    font-weight: 600; background: var(--badge-bg, #333); color: var(--badge-fg, #fff);
+.agent-grid-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 240, 255, 0.3);
 }
-.agent-card .label {
-    font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700;
-    color: var(--accent, #E6EDF3); margin-top: 10px;
+.agent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
 }
-.agent-card .dim { font-size: 0.72rem; color: #7A8B9A; text-transform: uppercase; letter-spacing: 0.05em; }
-.agent-card .conf { font-size: 0.8rem; color: #9FB0C0; margin-top: 4px; }
-.agent-card .reasoning { font-size: 0.82rem; color: #B8C4CE; margin-top: 10px; line-height: 1.4; }
-.agent-card .meta { font-size: 0.7rem; color: #5D6D7A; margin-top: 10px; border-top: 1px solid #1B2830; padding-top: 8px; }
+.agent-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #F8FAFC;
+}
+.agent-dim {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+.agent-status-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+.agent-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 8px 0 4px 0;
+}
+.agent-conf {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: #94A3B8;
+}
+.agent-reasoning {
+    font-size: 0.82rem;
+    color: #CBD5E1;
+    line-height: 1.5;
+    margin: 12px 0;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 2px solid #334155;
+}
+.agent-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #1E293B;
+    padding-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #64748B;
+}
 
-/* Recommendation card */
-.rec-card {
-    position: relative; overflow: hidden;
-    border-radius: 16px; padding: 26px 30px; margin-top: 8px;
-    background: linear-gradient(135deg, var(--rec-bg, #0F1E19) 0%, #0D141B 100%);
-    border: 1px solid var(--rec-border, #234339);
+/* Master Decision HUD */
+.master-decision-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(8, 12, 22, 0.98) 100%);
+    border-radius: 14px;
+    padding: 24px 28px;
+    border: 1px solid #334155;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    margin: 12px 0 20px 0;
+    position: relative;
+    overflow: hidden;
 }
-.rec-card .action {
-    position: relative; z-index: 1;
-    font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700;
-    color: var(--rec-accent, #8FF7D6);
+.master-action {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
-.rec-card .reasoning { position: relative; z-index: 1; color: #C7D3DC; margin-top: 8px; font-size: 0.92rem; line-height: 1.5; }
-.rec-card .cites { position: relative; z-index: 1; margin-top: 12px; font-size: 0.78rem; color: #7A8B9A; }
-.rec-card .cites code { background: #060A0F; padding: 2px 6px; border-radius: 6px; color: #8FF7D6; }
+.master-reasoning {
+    font-size: 0.95rem;
+    color: #E2E8F0;
+    line-height: 1.6;
+    margin-top: 10px;
+}
+.citation-chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+    align-items: center;
+}
+.citation-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    background: rgba(0, 240, 255, 0.08);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    color: #38BDF8;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
 
-/* Profile comparison chip */
-.profile-chip {
-    border-radius: 12px; padding: 14px; background: #0D141B; border: 1px solid #1B2830; text-align: center;
+/* Profile Comparison Chips */
+.profile-compare-card {
+    background: #090E1A;
+    border: 1px solid #1E293B;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.2s;
 }
-.profile-chip .pname { font-weight: 600; text-transform: capitalize; color: #E6EDF3; font-size: 0.85rem; }
-.profile-chip .paction { font-size: 0.85rem; color: #8FF7D6; margin-top: 6px; font-weight: 600; }
-.profile-chip .pconf { font-size: 0.72rem; color: #7A8B9A; margin-top: 4px; }
-
-.stButton>button {
-    border-radius: 10px; font-weight: 600; border: none;
-    background: linear-gradient(90deg, #8FF7D6, #4FD8B0); color: #060A0F;
-    padding: 0.6rem 1.4rem;
+.profile-compare-card.active {
+    border-color: #00F0FF;
+    background: rgba(0, 240, 255, 0.04);
 }
-.stButton>button:hover { box-shadow: 0 0 18px rgba(143,247,214,0.35); }
+.profile-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #F8FAFC;
+    text-transform: capitalize;
+}
+.profile-action {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-top: 6px;
+}
 
-hr { border-color: #1B2830; }
+/* Metric KPI HUD */
+div[data-testid="stMetric"] {
+    background: #090E1A;
+    border: 1px solid #1E293B;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+div[data-testid="stMetric"] label {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.72rem !important;
+    color: #94A3B8 !important;
+    text-transform: uppercase;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 1.45rem !important;
+    font-weight: 700 !important;
+    color: #F8FAFC !important;
+}
+
+/* Custom Streamlit Button Styling */
+div.stButton > button {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(90deg, #E62429 0%, #FF4655 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.65rem 1.8rem !important;
+    box-shadow: 0 4px 14px rgba(230, 36, 41, 0.4) !important;
+    transition: all 0.2s ease !important;
+    width: 100%;
+}
+div.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(230, 36, 41, 0.6) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
-def badge_style(o):
-    """Returns (accent_color, badge_bg, badge_fg, badge_text) for an agent output."""
+# ---------------------------------------------------------------------------
+# UI Helpers & Renderers
+# ---------------------------------------------------------------------------
+def get_agent_colors(o):
+    """Returns dynamic color sets for specialized agent cards."""
     if o.degraded:
-        return "#F59E0B", "rgba(245,158,11,0.15)", "#F59E0B", "DEGRADED"
+        return {"accent": "#F59E0B", "bg": "rgba(245,158,11,0.12)", "text": "#F59E0B", "status": "DEGRADED"}
+    
     bullish = {"BULLISH", "POSITIVE", "VOLUME_SPIKE", "GROUNDED"}
-    bearish = {"BEARISH", "NEGATIVE"}
+    bearish = {"BEARISH", "NEGATIVE", "HIGH_RISK"}
+    
     if o.label in bullish:
-        return "#8FF7D6", "rgba(143,247,214,0.15)", "#8FF7D6", "OK"
+        return {"accent": "#10B981", "bg": "rgba(16,185,129,0.12)", "text": "#10B981", "status": "NOMINAL"}
     if o.label in bearish:
-        return "#F87171", "rgba(248,113,113,0.15)", "#F87171", "OK"
-    return "#7DD3FC", "rgba(125,211,252,0.15)", "#7DD3FC", "OK"
+        return {"accent": "#EF4444", "bg": "rgba(239,68,68,0.12)", "text": "#EF4444", "status": "ALERT"}
+    
+    return {"accent": "#00F0FF", "bg": "rgba(0,240,255,0.12)", "text": "#00F0FF", "status": "NEUTRAL"}
 
 
-def render_agent_card(o):
-    accent, badge_bg, badge_fg, badge_text = badge_style(o)
+def render_agent_card_ui(o):
+    cfg = get_agent_colors(o)
     cites = ""
     if o.citations:
-        cites = f'<div class="meta">📎 {", ".join(o.citations)}</div>'
+        cites = f"<span>📎 {', '.join(o.citations)}</span>"
+
     html = f"""
-    <div class="agent-card" style="--accent:{accent}; --badge-bg:{badge_bg}; --badge-fg:{badge_fg};">
-        {spiderweb_svg(size=90, color=accent, opacity=0.18, flip_x=True)}
-        <span class="badge">{badge_text}</span>
-        <div class="name">🕷️ {o.agent}</div>
-        <div class="dim">{o.dimension.replace('_', ' ')}</div>
-        <div class="label">{o.label}</div>
-        <div class="conf">confidence {o.confidence:.2f}</div>
-        <div class="reasoning">{o.reasoning}</div>
-        <div class="meta">⚡ {o.latency_ms:.1f} ms</div>
-        {cites}
+    <div class="agent-grid-card" style="border-left: 3px solid {cfg['accent']};">
+        <div class="agent-header">
+            <div>
+                <div class="agent-name">{o.agent}</div>
+                <div class="agent-dim">{o.dimension.replace('_', ' ')}</div>
+            </div>
+            <span class="agent-status-badge" style="background:{cfg['bg']}; color:{cfg['text']}; border: 1px solid {cfg['accent']}40;">
+                {cfg['status']}
+            </span>
+        </div>
+        <div class="agent-label" style="color:{cfg['accent']};">{o.label}</div>
+        <div class="agent-conf">CONFIDENCE // {o.confidence:.0%}</div>
+        <div class="agent-reasoning">{o.reasoning}</div>
+        <div class="agent-footer">
+            <span>⚡ {o.latency_ms:.1f}ms</span>
+            {cites}
+        </div>
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
 
 
-def render_recommendation(synthesis):
+def render_decision_hud(synthesis):
     if synthesis["conflict"]:
-        rec_bg, rec_border, rec_accent = "#241A0C", "#4A3A2A", "#F59E0B"
+        border_col, text_col = "#F59E0B", "#FBBF24"
+        badge_text = "⚠️ CONFLICT DETECTED & RESOLVED"
     elif synthesis["action"].startswith("CONSIDER BUY"):
-        rec_bg, rec_border, rec_accent = "#0F1E19", "#234339", "#8FF7D6"
+        border_col, text_col = "#10B981", "#34D399"
+        badge_text = "🟢 HIGH-CONVICTION OPPORTUNITY"
     elif synthesis["action"].startswith("CONSIDER REDUCE"):
-        rec_bg, rec_border, rec_accent = "#231313", "#4A2A2A", "#F87171"
+        border_col, text_col = "#EF4444", "#F87171"
+        badge_text = "🔴 RISK MITIGATION / EXIT"
     else:
-        rec_bg, rec_border, rec_accent = "#101820", "#233A4A", "#7DD3FC"
+        border_col, text_col = "#00F0FF", "#38BDF8"
+        badge_text = "🔵 NEUTRAL ALLOCATION"
 
-    conflict_tag = ' ⚠️ CONFLICTING SIGNALS' if synthesis["conflict"] else ""
     cites_html = ""
     if synthesis["citations"]:
-        chips = " ".join(f"<code>{c}</code>" for c in synthesis["citations"])
-        cites_html = f'<div class="cites">📎 Cited sources: {chips}</div>'
-    degraded_html = ""
+        chips = "".join([f'<span class="citation-chip">SEBI // {c}</span>' for c in synthesis["citations"]])
+        cites_html = f'<div class="citation-chip-container"><span style="font-size:0.75rem; color:#64748B; text-transform:uppercase;">Attributions:</span> {chips}</div>'
+
+    degraded_notice = ""
     if synthesis["degraded_agents"]:
-        degraded_html = (f'<div class="cites">⚠️ Degraded inputs: '
-                          f'{", ".join(synthesis["degraded_agents"])} — confidence reduced, not fabricated.</div>')
+        degraded_notice = f"""
+        <div style="margin-top:12px; padding:8px 12px; border-radius:6px; background:rgba(245,158,11,0.08); border:1px dashed #F59E0B; font-size:0.78rem; color:#FCD34D;">
+            ⚠️ <strong>Degraded Telemetry Alert:</strong> Fallback routing active for: {", ".join(synthesis['degraded_agents'])}. Confidence scores penalized to prevent ungrounded algorithmic execution.
+        </div>
+        """
 
     html = f"""
-    <div class="rec-card" style="--rec-bg:{rec_bg}; --rec-border:{rec_border}; --rec-accent:{rec_accent};">
-        {spiderweb_svg(size=180, color=rec_accent, opacity=0.12, flip_x=True)}
-        <div class="action">{synthesis['action']}{conflict_tag}</div>
-        <div class="reasoning">{synthesis['reasoning']}</div>
+    <div class="master-decision-card" style="border-left: 4px solid {border_col};">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-family:'JetBrains Mono'; font-size:0.72rem; color:{text_col}; letter-spacing:0.08em; font-weight:700;">
+                {badge_text}
+            </span>
+            <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#94A3B8;">
+                SYNTHESIS CONFIDENCE: <strong>{synthesis['confidence']:.0%}</strong>
+            </span>
+        </div>
+        <div class="master-action" style="color:{text_col};">{synthesis['action']}</div>
+        <div class="master-reasoning">{synthesis['reasoning']}</div>
         {cites_html}
-        {degraded_html}
+        {degraded_notice}
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
-    st.progress(synthesis["confidence"], text=f"Confidence: {synthesis['confidence']:.0%}")
+    st.progress(synthesis["confidence"])
 
 
 # ---------------------------------------------------------------------------
-# Hero
+# Header Section
 # ---------------------------------------------------------------------------
-st.markdown(f"""
-<div class="hero">
-    {spiderweb_svg(size=200, color="#8FF7D6", opacity=0.20)}
-    {spiderweb_svg(size=200, color="#7DD3FC", opacity=0.14, flip_x=True)}
-    <div class="hero-content">
-        <h1>🕸️ Spider-Sense — Multi-Agent Investment Intelligence</h1>
-        <p>Real-time signals, RAG-grounded reasoning, and risk-personalized recommendations — every thread of the decision traceable back to its source.</p>
-        <span class="tag">PS-01 · HackVerse Sprint 1</span>
+st.markdown("""
+<div class="hero-container">
+    <div class="hero-title-group">
+        <h1>🕷️ SPIDER-SENSE // Financial Intelligence</h1>
+        <p>Explainable, Multi-Agent Autonomous Reasoning Architecture for Retail Investors</p>
+    </div>
+    <div class="badge-group">
+        <span class="hud-pill live">● Swarm Online</span>
+        <span class="hud-pill">PS-01 // Sprint 1</span>
+        <span class="hud-pill" style="border-color: rgba(230,36,41,0.5); color:#FF4655;">Team YOLOTECH</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-
+# ---------------------------------------------------------------------------
+# Corpus & State Initialization
+# ---------------------------------------------------------------------------
 @st.cache_resource
 def get_rag_index():
     return RAGIndex(generate_filing_corpus())
-
 
 rag_index = get_rag_index()
 portfolio = generate_portfolio()
 
 # ---------------------------------------------------------------------------
-# Controls
+# Controls Panel
 # ---------------------------------------------------------------------------
-st.markdown('<div class="section-label">Configuration</div>', unsafe_allow_html=True)
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    ticker = st.selectbox("Ticker", TICKERS)
-with col2:
-    profile_name = st.selectbox("Risk profile", list(RISK_PROFILES.keys()), index=1)
-with col3:
-    scenario = st.selectbox("Market scenario", ["normal", "crash", "positive_news", "negative_news"])
-with col4:
-    degrade = st.selectbox("Simulate degraded feed", ["none", "momentum", "volume", "sentiment"])
+with st.container():
+    st.markdown('<div class="hud-heading">Telemetry Configuration & Target Parameters</div>', unsafe_allow_html=True)
+    
+    c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 1.2])
+    with c1:
+        ticker = st.selectbox("Target Asset", TICKERS, help="NSE listed equities")
+    with c2:
+        profile_name = st.selectbox("Investor Persona", list(RISK_PROFILES.keys()), index=1)
+    with c3:
+        scenario = st.selectbox("Simulated Market Environment", ["normal", "crash", "positive_news", "negative_news"])
+    with c4:
+        degrade = st.selectbox("Fault-Injection (Degraded Mode)", ["none", "momentum", "volume", "sentiment"])
 
-run = st.button("▶  Run multi-agent analysis", type="primary")
-
-st.markdown('<div class="section-label">Portfolio / Watchlist</div>', unsafe_allow_html=True)
-st.dataframe(pd.DataFrame(list(portfolio.items()), columns=["Ticker", "Value (₹)"]),
-             use_container_width=True, hide_index=True)
+    st.write("")
+    run = st.button("🚀 DISPATCH MULTI-AGENT SWARM", use_container_width=True)
 
 # ---------------------------------------------------------------------------
-# Run pipeline
+# Watchlist / Portfolio Overview
+# ---------------------------------------------------------------------------
+with st.expander("💼 User Portfolio & Watchlist State", expanded=False):
+    st.dataframe(
+        pd.DataFrame(list(portfolio.items()), columns=["Asset", "Holding Valuation (₹)"]),
+        use_container_width=True,
+        hide_index=True
+    )
+
+# ---------------------------------------------------------------------------
+# Multi-Agent Execution & Rendering
 # ---------------------------------------------------------------------------
 if run:
-    crash = scenario == "crash"
+    crash = (scenario == "crash")
     market_data = generate_market_data(ticker, crash=crash)
     news_sentiment = (
-        "positive" if scenario == "positive_news" else "negative" if scenario == "negative_news" else "mixed"
+        "positive" if scenario == "positive_news" 
+        else "negative" if scenario == "negative_news" 
+        else "mixed"
     )
     news = generate_news(ticker, news_sentiment)
 
+    # Parallel Agent Orchestration
     outputs, synthesis = run_pipeline(
         ticker, market_data, news, rag_index, profile_name,
         simulate_degraded=None if degrade == "none" else degrade,
     )
 
-    st.markdown('<div class="section-label">Agent Signals · Parallel Execution</div>', unsafe_allow_html=True)
-    cols = st.columns(len(outputs))
-    for c, o in zip(cols, outputs):
+    # 1. Agent Swarm Results
+    st.markdown('<div class="hud-heading">Parallel Agent Telemetry & Reasoning Traces</div>', unsafe_allow_html=True)
+    agent_cols = st.columns(len(outputs))
+    for c, o in zip(agent_cols, outputs):
         with c:
-            render_agent_card(o)
+            render_agent_card_ui(o)
 
-    st.markdown('<div class="section-label">Synthesized Recommendation</div>', unsafe_allow_html=True)
-    render_recommendation(synthesis)
+    # 2. Synthesized Master Recommendation
+    st.markdown('<div class="hud-heading">Synthesized & Grounded Recommendation</div>', unsafe_allow_html=True)
+    render_decision_hud(synthesis)
 
-    st.markdown('<div class="section-label">Personalization Proof · Same Data, Every Profile</div>',
-                unsafe_allow_html=True)
+    # 3. Behavioral Personalization Proof (Same Data -> Across All Risk Profiles)
+    st.markdown('<div class="hud-heading">Behavioral Personalization Proof (Identical Input across Personas)</div>', unsafe_allow_html=True)
     comp_cols = st.columns(len(RISK_PROFILES))
     for c, pname in zip(comp_cols, RISK_PROFILES.keys()):
-        _, syn2 = run_pipeline(ticker, market_data, news, rag_index, pname,
-                                simulate_degraded=None if degrade == "none" else degrade)
+        _, syn2 = run_pipeline(
+            ticker, market_data, news, rag_index, pname,
+            simulate_degraded=None if degrade == "none" else degrade
+        )
+        is_active = (pname == profile_name)
+        action_col = "#10B981" if "BUY" in syn2['action'] else ("#EF4444" if "REDUCE" in syn2['action'] else "#00F0FF")
+        
         with c:
             st.markdown(f"""
-            <div class="profile-chip">
-                <div class="pname">{pname}{' ★' if pname == profile_name else ''}</div>
-                <div class="paction">{syn2['action']}</div>
-                <div class="pconf">confidence {syn2['confidence']:.2f}</div>
+            <div class="profile-compare-card {'active' if is_active else ''}">
+                <div class="profile-title">{pname} {'★' if is_active else ''}</div>
+                <div class="profile-action" style="color:{action_col};">{syn2['action']}</div>
+                <div style="font-family:'JetBrains Mono'; font-size:0.72rem; color:#64748B; margin-top:4px;">
+                    CONF: {syn2['confidence']:.0%}
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
+    # 4. Session Metrics HUD
     forward_return_mock = random.uniform(-8, 8)
     row = log_session(ticker, profile_name, outputs, synthesis, forward_return_mock, portfolio)
-    st.markdown('<div class="section-label">Session Metrics</div>', unsafe_allow_html=True)
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Avg agent latency", f"{row['avg_agent_latency_ms']} ms")
-    m2.metric("Portfolio concentration (HHI)", row["portfolio_concentration_hhi"])
-    m3.metric("Mock 30d forward return", f"{row['mock_30d_forward_return_pct']}%")
-    m4.metric("Directional accuracy proxy", "✅" if row["directional_accuracy_proxy"] else "—")
 
-st.markdown('<div class="section-label">Historical Performance Log</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hud-heading">Session Telemetry & Quantitative Metrics</div>', unsafe_allow_html=True)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Avg Swarm Latency", f"{row['avg_agent_latency_ms']} ms")
+    m2.metric("Portfolio HHI Risk Index", row["portfolio_concentration_hhi"])
+    m3.metric("30d Forward Return Proxy", f"{row['mock_30d_forward_return_pct']}%")
+    m4.metric("Directional Accuracy", "PASS ✅" if row["directional_accuracy_proxy"] else "NEUTRAL ➖")
+
+# ---------------------------------------------------------------------------
+# Persistent Historical Logs
+# ---------------------------------------------------------------------------
+st.markdown('<div class="hud-heading">Audit Trail & Session Persistence Log</div>', unsafe_allow_html=True)
 if os.path.exists(LOG_PATH):
     st.dataframe(pd.read_csv(LOG_PATH), use_container_width=True, hide_index=True)
 else:
-    st.info("Run an analysis above to start logging.")
+    st.info("No logs found. Run a multi-agent dispatch above to generate an audit trail.")
