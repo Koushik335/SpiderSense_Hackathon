@@ -146,7 +146,7 @@ except ImportError:
         }
 
 # ============================================================================
-# 2. PAGE CONFIGURATION & GRAND OBSIDIAN UI STYLING (NO SIDEBAR)
+# 2. PAGE CONFIGURATION & ENLARGED OBSIDIAN UI STYLING
 # ============================================================================
 st.set_page_config(
     page_title="SPIDER-SENSE // Autonomous Swarm Command",
@@ -163,9 +163,10 @@ st.markdown("""
 html, body, [class*="css"] {
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: #F8FAFC;
+    font-size: 17px;
 }
 
-/* Hide Streamlit default sidebar entirely */
+/* Hide Streamlit default sidebar */
 [data-testid="stSidebar"] { display: none !important; }
 [data-testid="collapsedControl"] { display: none !important; }
 
@@ -173,40 +174,40 @@ html, body, [class*="css"] {
 .stApp {
     background-color: #010307;
     background-image: 
-        radial-gradient(circle at 5% 0%, rgba(255, 30, 66, 0.25) 0%, transparent 35%),
-        radial-gradient(circle at 95% 0%, rgba(0, 245, 255, 0.22) 0%, transparent 35%),
-        radial-gradient(circle at 50% 10%, rgba(176, 38, 255, 0.20) 0%, transparent 45%),
-        radial-gradient(circle at 50% 100%, rgba(0, 255, 157, 0.16) 0%, transparent 45%),
-        radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
-    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+        radial-gradient(circle at 5% 0%, rgba(255, 30, 66, 0.28) 0%, transparent 35%),
+        radial-gradient(circle at 95% 0%, rgba(0, 245, 255, 0.25) 0%, transparent 35%),
+        radial-gradient(circle at 50% 10%, rgba(176, 38, 255, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 50% 100%, rgba(0, 255, 157, 0.18) 0%, transparent 45%),
+        radial-gradient(rgba(255, 255, 255, 0.09) 1.4px, transparent 1.4px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 30px 30px;
 }
 
 .block-container {
-    padding-top: 1rem;
-    padding-bottom: 3.5rem;
-    max-width: 1440px;
+    padding-top: 1.2rem;
+    padding-bottom: 4rem;
+    max-width: 1540px;
 }
 
 /* Top Navbar Header */
 .tactical-navbar {
     background: linear-gradient(135deg, rgba(8, 14, 28, 0.96) 0%, rgba(3, 5, 12, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 4px solid #FF1E42;
-    border-bottom: 2.5px solid #B026FF;
-    border-radius: 18px;
-    padding: 20px 28px;
-    margin-bottom: 16px;
-    box-shadow: 0 20px 45px rgba(0,0,0,0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 5px solid #FF1E42;
+    border-bottom: 3px solid #B026FF;
+    border-radius: 22px;
+    padding: 24px 34px;
+    margin-bottom: 20px;
+    box-shadow: 0 24px 50px rgba(0,0,0,0.95), 0 0 35px rgba(176, 38, 255, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 20px;
 }
 
 .brand-title {
     font-family: 'Syne', sans-serif !important;
-    font-size: 2.4rem;
+    font-size: 2.9rem;
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 1;
@@ -216,53 +217,60 @@ html, body, [class*="css"] {
     -webkit-text-fill-color: transparent;
 }
 
+.navbar-tagline {
+    color: #94A3B8;
+    font-size: 1.05rem;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
 /* Market Ticker Tape */
 .market-ticker-tape {
     display: flex;
-    gap: 18px;
-    background: rgba(4, 7, 16, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 10px 18px;
-    margin-bottom: 20px;
+    gap: 24px;
+    background: rgba(4, 7, 16, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px 22px;
+    margin-bottom: 24px;
     overflow-x: auto;
     white-space: nowrap;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
+    font-size: 0.92rem;
 }
-.ticker-item { display: flex; gap: 6px; align-items: center; }
-.ticker-up { color: #00FF9D; font-weight: 700; }
-.ticker-down { color: #FF1E42; font-weight: 700; }
+.ticker-item { display: flex; gap: 8px; align-items: center; }
+.ticker-up { color: #00FF9D; font-weight: 800; }
+.ticker-down { color: #FF1E42; font-weight: 800; }
 
 /* Control Hub Container */
 .control-hub-box {
-    background: linear-gradient(135deg, rgba(8, 14, 28, 0.94) 0%, rgba(3, 6, 15, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 4px solid #B026FF;
-    border-radius: 18px;
-    padding: 22px 28px;
-    margin-bottom: 22px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.7);
+    background: linear-gradient(135deg, rgba(8, 14, 28, 0.95) 0%, rgba(3, 6, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 5px solid #B026FF;
+    border-radius: 20px;
+    padding: 26px 32px;
+    margin-bottom: 26px;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.75);
 }
 
 /* Tabs Styling */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 10px;
-    background: rgba(4, 7, 16, 0.95);
-    padding: 8px 12px;
-    border-radius: 16px;
+    gap: 12px;
+    background: rgba(4, 7, 16, 0.96);
+    padding: 10px 14px;
+    border-radius: 18px;
     border: 1px solid #1E293B;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin-bottom: 26px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.55);
 }
 
 .stTabs [data-baseweb="tab"] {
     font-family: 'Syne', sans-serif !important;
-    font-size: 0.92rem !important;
+    font-size: 1.08rem !important;
     font-weight: 700 !important;
     color: #94A3B8 !important;
-    padding: 12px 20px !important;
-    border-radius: 12px !important;
+    padding: 14px 26px !important;
+    border-radius: 14px !important;
     border: 1px solid transparent !important;
     background: transparent !important;
     transition: all 0.25s ease !important;
@@ -271,63 +279,71 @@ html, body, [class*="css"] {
 .stTabs [aria-selected="true"] {
     color: #00F5FF !important;
     background: #0B1324 !important;
-    border-color: rgba(176, 38, 255, 0.6) !important;
-    box-shadow: 0 4px 22px rgba(176, 38, 255, 0.35) !important;
+    border-color: rgba(176, 38, 255, 0.7) !important;
+    box-shadow: 0 4px 26px rgba(176, 38, 255, 0.4) !important;
 }
 
 /* Surface & Component Cards */
 .sp-card {
-    background: linear-gradient(135deg, rgba(8, 14, 28, 0.95) 0%, rgba(3, 6, 15, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.8);
+    background: linear-gradient(135deg, rgba(8, 14, 28, 0.96) 0%, rgba(3, 6, 15, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    padding: 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 20px 48px rgba(0,0,0,0.85);
 }
 
 .sp-card-header {
     font-family: 'Syne', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.35rem;
     font-weight: 800;
     letter-spacing: -0.01em;
     color: #F8FAFC;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #1E293B;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
 .verdict-hero-card {
-    background: linear-gradient(135deg, rgba(255, 30, 66, 0.16) 0%, rgba(176, 38, 255, 0.12) 50%, rgba(4, 7, 16, 0.98) 100%);
-    border: 2px solid rgba(255, 30, 66, 0.7);
-    border-radius: 18px;
-    padding: 30px;
+    background: linear-gradient(135deg, rgba(255, 30, 66, 0.18) 0%, rgba(176, 38, 255, 0.14) 50%, rgba(4, 7, 16, 0.98) 100%);
+    border: 2.5px solid rgba(255, 30, 66, 0.8);
+    border-radius: 22px;
+    padding: 38px 44px;
     text-align: center;
-    margin-bottom: 22px;
-    box-shadow: 0 20px 50px rgba(255, 30, 66, 0.25), 0 0 30px rgba(176, 38, 255, 0.2);
+    margin-bottom: 26px;
+    box-shadow: 0 24px 60px rgba(255, 30, 66, 0.3), 0 0 35px rgba(176, 38, 255, 0.25);
 }
 
 .verdict-action {
     font-family: 'Syne', sans-serif;
-    font-size: 2.7rem;
+    font-size: 3.3rem;
     font-weight: 900;
     letter-spacing: -0.02em;
-    margin: 8px 0;
+    margin: 12px 0;
     line-height: 1.1;
+}
+
+.verdict-reasoning {
+    font-size: 1.2rem;
+    color: #E2E8F0;
+    line-height: 1.7;
+    max-width: 1040px;
+    margin: 12px auto 0 auto;
 }
 
 .agent-node {
     background: #040711;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 24px;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.75);
     transition: all 0.25s ease;
 }
 .agent-node:hover {
@@ -337,43 +353,44 @@ html, body, [class*="css"] {
 
 .trace-line {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: #E2E8F0;
-    background: rgba(12, 20, 38, 0.85);
-    padding: 12px 16px;
-    border-radius: 8px;
-    border-left: 4px solid #00F5FF;
-    margin: 8px 0;
-    line-height: 1.55;
+    background: rgba(12, 20, 38, 0.9);
+    padding: 14px 18px;
+    border-radius: 10px;
+    border-left: 4.5px solid #00F5FF;
+    margin: 10px 0;
+    line-height: 1.6;
 }
 
 .citation-box {
     background: #040711;
     border: 1px solid #1E293B;
-    border-left: 4.5px solid #B026FF;
-    padding: 16px 20px;
-    border-radius: 12px;
-    margin-bottom: 12px;
+    border-left: 5px solid #B026FF;
+    padding: 20px 24px;
+    border-radius: 14px;
+    margin-bottom: 14px;
 }
 
 /* Metric KPI HUD Cards */
 div[data-testid="stMetric"] {
     background: #040711;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 3.5px solid #00FF9D;
-    border-radius: 14px;
-    padding: 14px 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 4px solid #00FF9D;
+    border-radius: 16px;
+    padding: 18px 22px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.5);
 }
 div[data-testid="stMetric"] label {
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 0.72rem !important;
+    font-size: 0.84rem !important;
     color: #94A3B8 !important;
     text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-family: 'Syne', sans-serif !important;
-    font-size: 1.6rem !important;
+    font-size: 2.1rem !important;
     font-weight: 800 !important;
     color: #F8FAFC !important;
 }
@@ -381,21 +398,21 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 /* Main Action Button */
 div.stButton > button {
     font-family: 'Syne', sans-serif !important;
-    font-size: 1.1rem !important;
+    font-size: 1.25rem !important;
     font-weight: 800 !important;
     letter-spacing: 0.05em !important;
     background: linear-gradient(90deg, #FF1E42 0%, #B026FF 50%, #00F5FF 100%) !important;
     color: #FFFFFF !important;
     border: none !important;
-    border-radius: 14px !important;
-    padding: 0.95rem 2.2rem !important;
-    box-shadow: 0 8px 30px rgba(176, 38, 255, 0.5) !important;
+    border-radius: 16px !important;
+    padding: 1.1rem 2.6rem !important;
+    box-shadow: 0 8px 32px rgba(176, 38, 255, 0.55) !important;
     transition: all 0.25s ease !important;
     width: 100%;
 }
 div.stButton > button:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 12px 40px rgba(0, 245, 255, 0.8) !important;
+    box-shadow: 0 14px 44px rgba(0, 245, 255, 0.85) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -419,9 +436,9 @@ def create_price_history_chart(ticker, base_price, rsi_val):
         fig.add_trace(go.Scatter(
             x=df_chart["Date"], y=df_chart["Price"],
             mode="lines",
-            line=dict(color="#00F5FF", width=3),
+            line=dict(color="#00F5FF", width=3.5),
             fill="tozeroy",
-            fillcolor="rgba(0, 245, 255, 0.08)",
+            fillcolor="rgba(0, 245, 255, 0.09)",
             name="Asset Price (₹)"
         ))
         fig.update_layout(
@@ -429,10 +446,10 @@ def create_price_history_chart(ticker, base_price, rsi_val):
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(4,7,16,0.6)",
             margin=dict(l=10, r=10, t=25, b=10),
-            height=280,
-            font=dict(family="Plus Jakarta Sans", color="#94A3B8"),
+            height=320,
+            font=dict(family="Plus Jakarta Sans", color="#94A3B8", size=13),
             xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.05)")
+            yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.06)")
         )
         return fig
     return df_chart.set_index("Date")
@@ -446,16 +463,16 @@ def create_agent_radar_chart(outputs):
         fig.add_trace(go.Bar(
             name="Confidence (%)",
             x=categories, y=confidences,
-            marker=dict(color=["#00F5FF", "#B026FF", "#00FF9D"], line=dict(color="#FFFFFF", width=1))
+            marker=dict(color=["#00F5FF", "#B026FF", "#00FF9D"], line=dict(color="#FFFFFF", width=1.5))
         ))
         fig.update_layout(
             template="plotly_dark",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(4,7,16,0.6)",
             margin=dict(l=10, r=10, t=20, b=10),
-            height=260,
-            font=dict(family="Plus Jakarta Sans", color="#94A3B8"),
-            yaxis=dict(range=[0, 100], showgrid=True, gridcolor="rgba(255,255,255,0.05)")
+            height=290,
+            font=dict(family="Plus Jakarta Sans", color="#94A3B8", size=13),
+            yaxis=dict(range=[0, 100], showgrid=True, gridcolor="rgba(255,255,255,0.06)")
         )
         return fig
     return pd.DataFrame({"Agent": categories, "Confidence": confidences}).set_index("Agent")
@@ -465,7 +482,7 @@ def create_portfolio_donut(portfolio):
         labels = list(portfolio.keys())
         values = list(portfolio.values())
         fig = go.Figure(data=[go.Pie(
-            labels=labels, values=values, hole=0.6,
+            labels=labels, values=values, hole=0.58,
             marker=dict(colors=["#00F5FF", "#FF1E42", "#B026FF", "#00FF9D", "#FBBF24"])
         )])
         fig.update_layout(
@@ -473,8 +490,8 @@ def create_portfolio_donut(portfolio):
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             margin=dict(l=10, r=10, t=10, b=10),
-            height=260,
-            font=dict(family="Plus Jakarta Sans", color="#F8FAFC"),
+            height=300,
+            font=dict(family="Plus Jakarta Sans", color="#F8FAFC", size=13),
             showlegend=True
         )
         return fig
@@ -500,14 +517,14 @@ st.markdown("""
 <div class="tactical-navbar">
     <div>
         <div class="brand-title">🕷️ SPIDER-SENSE FINANCIAL</div>
-        <div style="color: #94A3B8; font-size: 0.9rem; margin-top: 5px; font-weight: 500;">
-            Multi-Agent Autonomous Financial Intelligence Network // Grounded Retail Infrastructure
+        <div class="navbar-tagline">
+            Multi-Agent Autonomous Financial Intelligence Network // Explainable Retail Research Infrastructure
         </div>
     </div>
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; font-weight:800; padding:6px 12px; border-radius:6px; border:1px solid rgba(0,245,255,0.6); color:#00F5FF; background:rgba(0,245,255,0.1);">● Swarm Online</span>
-        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; font-weight:800; padding:6px 12px; border-radius:6px; border:1px solid rgba(176,38,255,0.6); color:#D8B4FE; background:rgba(176,38,255,0.1);">Sprint 1: PS-01</span>
-        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; font-weight:800; padding:6px 12px; border-radius:6px; border:1px solid rgba(255,30,66,0.7); color:#FF4D6D; background:rgba(255,30,66,0.1);">Team YOLOTECH</span>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <span style="font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:800; padding:8px 16px; border-radius:8px; border:1px solid rgba(0,245,255,0.6); color:#00F5FF; background:rgba(0,245,255,0.12);">● Swarm Online</span>
+        <span style="font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:800; padding:8px 16px; border-radius:8px; border:1px solid rgba(176,38,255,0.6); color:#D8B4FE; background:rgba(176,38,255,0.12);">Sprint 1: PS-01</span>
+        <span style="font-family:'JetBrains Mono'; font-size:0.85rem; font-weight:800; padding:8px 16px; border-radius:8px; border:1px solid rgba(255,30,66,0.7); color:#FF4D6D; background:rgba(255,30,66,0.12);">Team YOLOTECH</span>
     </div>
 </div>
 
@@ -594,19 +611,19 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # =============================================================================
 with tab1:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
-    st.markdown(f'<div class="sp-card-header"><span>Master Synthesis Verdict // <strong>{m_ticker}</strong></span><span style="color:#B026FF; font-size:0.95rem; font-weight:700;">Persona: {m_profile}</span></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="sp-card-header"><span>Master Synthesis Verdict // <strong>{m_ticker}</strong></span><span style="color:#B026FF; font-size:1.05rem; font-weight:700;">Persona: {m_profile}</span></div>', unsafe_allow_html=True)
     
     action_col = "#00FF9D" if "BUY" in synthesis['action'] else ("#FF1E42" if "REDUCE" in synthesis['action'] or "AVOID" in synthesis['action'] else "#00F5FF")
     
     st.markdown(f"""
     <div class="verdict-hero-card">
-        <div style="font-family:'JetBrains Mono'; font-size:0.84rem; color:#D8B4FE; text-transform:uppercase; font-weight:800; letter-spacing:0.08em;">
+        <div style="font-family:'JetBrains Mono'; font-size:0.95rem; color:#D8B4FE; text-transform:uppercase; font-weight:800; letter-spacing:0.08em;">
             CALIBRATED RISK ACTION // {m_profile.upper()}
         </div>
         <div class="verdict-action" style="color:{action_col};">
             {synthesis['action']}
         </div>
-        <div style="font-size:1.08rem; color:#E2E8F0; line-height:1.65; max-width:940px; margin: 10px auto 0 auto;">
+        <div class="verdict-reasoning">
             {synthesis['reasoning']}
         </div>
     </div>
@@ -615,7 +632,7 @@ with tab1:
     st.progress(synthesis["confidence"], text=f"Synthesis Grounding Confidence: {synthesis['confidence']:.0%}")
 
     # Interactive Graph & Strategy Overview
-    st.markdown('<div class="sp-card-header" style="margin-top:24px;"><span>Asset Price Action & Telemetry Stream</span><span style="font-size:0.8rem; color:#64748B;">30-Day Moving Trajectory</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sp-card-header" style="margin-top:28px;"><span>Asset Price Action & Telemetry Stream</span><span style="font-size:0.9rem; color:#64748B;">30-Day Moving Trajectory</span></div>', unsafe_allow_html=True)
     
     g_col1, g_col2 = st.columns([2.2, 1])
     with g_col1:
@@ -623,19 +640,19 @@ with tab1:
         if HAS_PLOTLY:
             st.plotly_chart(chart_obj, use_container_width=True, config={'displayModeBar': False})
         else:
-            st.area_chart(chart_obj, height=280)
+            st.area_chart(chart_obj, height=320)
     with g_col2:
         st.markdown(f"""
-        <div style="background:#050914; border:1px solid #1E293B; border-radius:12px; padding:16px; height:100%;">
-            <div style="font-family:'Syne'; font-size:0.95rem; font-weight:800; color:#00F5FF; margin-bottom:12px;">EXECUTION METRICS</div>
-            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Live Tick: <strong style="color:#FFF;">₹{price_val:,.2f}</strong> ({change_pct_val:+.2f}%)</div>
-            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">RSI (14D): <strong style="color:{'#FF1E42' if rsi_val>70 else '#00FF9D'};">{rsi_val:.1f}</strong></div>
-            <div style="font-size:0.82rem; color:#94A3B8; margin-bottom:8px;">Vol Anomaly: <strong style="color:#FFF;">+{vol_zscore_val}σ</strong></div>
-            <div style="font-size:0.82rem; color:#94A3B8;">Options PCR: <strong style="color:#FFF;">{pcr_val:.2f}</strong></div>
+        <div style="background:#050914; border:1px solid #1E293B; border-radius:14px; padding:20px; height:100%;">
+            <div style="font-family:'Syne'; font-size:1.15rem; font-weight:800; color:#00F5FF; margin-bottom:14px;">EXECUTION METRICS</div>
+            <div style="font-size:0.95rem; color:#94A3B8; margin-bottom:10px;">Live Tick: <strong style="color:#FFF;">₹{price_val:,.2f}</strong> ({change_pct_val:+.2f}%)</div>
+            <div style="font-size:0.95rem; color:#94A3B8; margin-bottom:10px;">RSI (14D): <strong style="color:{'#FF1E42' if rsi_val>70 else '#00FF9D'};">{rsi_val:.1f}</strong></div>
+            <div style="font-size:0.95rem; color:#94A3B8; margin-bottom:10px;">Vol Anomaly: <strong style="color:#FFF;">+{vol_zscore_val}σ</strong></div>
+            <div style="font-size:0.95rem; color:#94A3B8;">Options PCR: <strong style="color:#FFF;">{pcr_val:.2f}</strong></div>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown('<div class="sp-card-header" style="margin-top:24px; color:#B026FF;">Transparent Multi-Agent Reasoning Trace</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sp-card-header" style="margin-top:28px; color:#B026FF;">Transparent Multi-Agent Reasoning Trace</div>', unsafe_allow_html=True)
     for out in outputs:
         st.markdown(f"""
         <div class="trace-line">
@@ -649,13 +666,13 @@ with tab1:
 # =============================================================================
 with tab2:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
-    st.markdown('<div class="sp-card-header"><span>Specialized Domain Agents // Real-Time Telemetry</span><span style="font-size:0.85rem; color:#64748B;">Parallel Async Pipeline (< 150ms)</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sp-card-header"><span>Specialized Domain Agents // Real-Time Telemetry</span><span style="font-size:0.95rem; color:#64748B;">Parallel Async Pipeline (< 150ms)</span></div>', unsafe_allow_html=True)
     
     radar_obj = create_agent_radar_chart(outputs)
     if HAS_PLOTLY:
         st.plotly_chart(radar_obj, use_container_width=True, config={'displayModeBar': False})
     else:
-        st.bar_chart(radar_obj, height=240)
+        st.bar_chart(radar_obj, height=290)
 
     st.write("")
     cols = st.columns(len(outputs))
@@ -663,28 +680,28 @@ with tab2:
         with col:
             status_col = "#B026FF" if o.degraded else ("#00FF9D" if "BULLISH" in o.label or "GROUNDED" in o.label else "#FF1E42")
             st.markdown(f"""
-            <div class="agent-node" style="border-left: 4.5px solid {status_col};">
+            <div class="agent-node" style="border-left: 5px solid {status_col};">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong style="color:#FFF; font-size:1.05rem; font-family:'Syne';">{o.agent}</strong>
-                        <span style="font-family:'JetBrains Mono'; font-size:0.65rem; color:{status_col}; border:1px solid {status_col}50; padding:2px 8px; border-radius:4px;">
+                        <strong style="color:#FFF; font-size:1.2rem; font-family:'Syne';">{o.agent}</strong>
+                        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:{status_col}; border:1px solid {status_col}50; padding:3px 10px; border-radius:6px;">
                             {'DEGRADED' if o.degraded else 'NOMINAL'}
                         </span>
                     </div>
-                    <div style="font-family:'JetBrains Mono'; font-size:0.68rem; color:#64748B; margin-top:4px; text-transform:uppercase;">
+                    <div style="font-family:'JetBrains Mono'; font-size:0.78rem; color:#64748B; margin-top:5px; text-transform:uppercase;">
                         {o.dimension}
                     </div>
-                    <div style="font-family:'Syne'; font-size:1.55rem; font-weight:800; color:{status_col}; margin:14px 0 4px 0;">
+                    <div style="font-family:'Syne'; font-size:1.75rem; font-weight:800; color:{status_col}; margin:16px 0 6px 0;">
                         {o.label}
                     </div>
-                    <div style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#94A3B8;">
+                    <div style="font-family:'JetBrains Mono'; font-size:0.85rem; color:#94A3B8;">
                         CONFIDENCE // {o.confidence:.0%}
                     </div>
-                    <div style="font-size:0.86rem; color:#CBD5E1; line-height:1.55; margin:14px 0; background:rgba(12,20,38,0.7); padding:12px; border-radius:8px; border-left: 2px solid {status_col};">
+                    <div style="font-size:0.95rem; color:#CBD5E1; line-height:1.6; margin:14px 0; background:rgba(12,20,38,0.7); padding:14px; border-radius:10px; border-left: 2px solid {status_col};">
                         {o.reasoning}
                     </div>
                 </div>
-                <div style="border-top:1px solid #1E293B; padding-top:10px; font-family:'JetBrains Mono'; font-size:0.72rem; color:#64748B; display:flex; justify-content:space-between;">
+                <div style="border-top:1px solid #1E293B; padding-top:12px; font-family:'JetBrains Mono'; font-size:0.8rem; color:#64748B; display:flex; justify-content:space-between;">
                     <span>⚡ {o.latency_ms:.1f}ms</span>
                     <span>{f'📎 {len(o.citations)} Cites' if o.citations else 'No Cites'}</span>
                 </div>
@@ -697,10 +714,10 @@ with tab2:
 # =============================================================================
 with tab3:
     st.markdown('<div class="sp-card">', unsafe_allow_html=True)
-    st.markdown('<div class="sp-card-header"><span>Behavioral Personalization Matrix</span><span style="font-size:0.85rem; color:#00FF9D;">Identical Feed ➔ Differential Synthesis</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sp-card-header"><span>Behavioral Personalization Matrix</span><span style="font-size:0.95rem; color:#00FF9D;">Identical Feed ➔ Differential Synthesis</span></div>', unsafe_allow_html=True)
     
     st.markdown("""
-    <div style="font-size:0.88rem; color:#94A3B8; margin-bottom:18px; line-height:1.5;">
+    <div style="font-size:1rem; color:#94A3B8; margin-bottom:20px; line-height:1.6;">
         <strong>Core Proof of Innovation:</strong> When an asset enters high momentum ($RSI > 75$), standard algorithms issue a generic alert. SPIDER-SENSE evaluates the signals through the user's specific risk envelope—protecting conservative accounts from drawdowns while unlocking breakout alpha for aggressive accounts.
     </div>
     """, unsafe_allow_html=True)
@@ -718,27 +735,27 @@ with tab3:
         
         with c:
             st.markdown(f"""
-            <div class="agent-node" style="border: 2px solid {'#B026FF' if is_active else '#1E293B'}; background:{'rgba(176,38,255,0.06)' if is_active else '#040711'};">
+            <div class="agent-node" style="border: 2.5px solid {'#B026FF' if is_active else '#1E293B'}; background:{'rgba(176,38,255,0.06)' if is_active else '#040711'};">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:800; font-size:1.05rem; color:#FFF; font-family:'Syne';">
+                        <span style="font-weight:800; font-size:1.15rem; color:#FFF; font-family:'Syne';">
                             {pname.split('(')[0]}
                         </span>
-                        <span style="font-family:'JetBrains Mono'; font-size:0.65rem; color:#00F5FF; border:1px solid rgba(0,245,255,0.4); padding:2px 6px; border-radius:4px;">
+                        <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#00F5FF; border:1px solid rgba(0,245,255,0.4); padding:3px 8px; border-radius:6px;">
                             {'★ ACTIVE' if is_active else 'PERSONA'}
                         </span>
                     </div>
-                    <div style="font-size:0.75rem; color:#94A3B8; margin-top:4px;">
+                    <div style="font-size:0.85rem; color:#94A3B8; margin-top:5px;">
                         Risk Tier: <strong style="color:#FFF;">{p_info.get('risk', 'N/A')}</strong> | Loss Limit: <strong style="color:#FF1E42;">{p_info.get('max_drawdown', 'N/A')}</strong>
                     </div>
-                    <div style="font-family:'Syne'; font-size:1.35rem; font-weight:800; color:{action_col}; margin:14px 0 6px 0;">
+                    <div style="font-family:'Syne'; font-size:1.55rem; font-weight:800; color:{action_col}; margin:16px 0 8px 0;">
                         {syn2['action']}
                     </div>
-                    <div style="font-size:0.84rem; color:#CBD5E1; line-height:1.55; margin:10px 0;">
+                    <div style="font-size:0.95rem; color:#CBD5E1; line-height:1.6; margin:12px 0;">
                         {syn2['reasoning']}
                     </div>
                 </div>
-                <div style="border-top:1px solid #1E293B; padding-top:8px; font-family:'JetBrains Mono'; font-size:0.75rem; color:#94A3B8;">
+                <div style="border-top:1px solid #1E293B; padding-top:10px; font-family:'JetBrains Mono'; font-size:0.85rem; color:#94A3B8;">
                     SYNTHESIS CONFIDENCE: <strong style="color:#FFF;">{syn2['confidence']:.0%}</strong>
                 </div>
             </div>
@@ -759,14 +776,14 @@ with tab4:
             st.markdown(f"""
             <div class="citation-box">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-family:'Syne'; font-size:1.1rem; font-weight:700; color:#D8B4FE;">
+                    <span style="font-family:'Syne'; font-size:1.25rem; font-weight:700; color:#D8B4FE;">
                         📄 SEBI Statutory Corpus Chunk: {c}
-                    </div>
-                    <span style="font-family:'JetBrains Mono'; font-size:0.7rem; color:#00FF9D; background:rgba(0,255,157,0.1); padding:2px 8px; border-radius:4px; border:1px solid rgba(0,255,157,0.3);">
+                    </span>
+                    <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#00FF9D; background:rgba(0,255,157,0.1); padding:3px 10px; border-radius:6px; border:1px solid rgba(0,255,157,0.3);">
                         VERIFIED AUDIT
                     </span>
                 </div>
-                <div style="font-size:0.88rem; color:#CBD5E1; margin-top:8px; line-height:1.55;">
+                <div style="font-size:0.98rem; color:#CBD5E1; margin-top:10px; line-height:1.65;">
                     Retrieved via TF-IDF Vector Space Embeddings over official statutory disclosures. Source grounding verified to prevent ungrounded AI hallucinations.
                 </div>
             </div>
@@ -789,17 +806,17 @@ with tab5:
     st.write("")
     p_col1, p_col2 = st.columns([1.2, 1])
     with p_col1:
-        st.markdown('<div class="sp-card-header" style="margin-top:12px;">Asset Concentration Breakdown</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sp-card-header" style="margin-top:14px;">Asset Concentration Breakdown</div>', unsafe_allow_html=True)
         donut_fig = create_portfolio_donut(portfolio)
         if HAS_PLOTLY:
             st.plotly_chart(donut_fig, use_container_width=True, config={'displayModeBar': False})
         else:
             st.dataframe(donut_fig, use_container_width=True)
     with p_col2:
-        st.markdown('<div class="sp-card-header" style="margin-top:12px;">Holding Valuations</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sp-card-header" style="margin-top:14px;">Holding Valuations</div>', unsafe_allow_html=True)
         st.dataframe(pd.DataFrame(list(portfolio.items()), columns=["Asset", "Holding Value (₹)"]), use_container_width=True, hide_index=True)
 
-    st.markdown('<div class="sp-card-header" style="margin-top:24px; color:#00FF9D;">Historical Audit Trail (Persistent Across Sessions)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sp-card-header" style="margin-top:28px; color:#00FF9D;">Historical Audit Trail (Persistent Across Sessions)</div>', unsafe_allow_html=True)
     if os.path.exists(LOG_PATH):
         st.dataframe(pd.read_csv(LOG_PATH), use_container_width=True, hide_index=True)
     else:
