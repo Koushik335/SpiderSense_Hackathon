@@ -146,7 +146,7 @@ except ImportError:
         }
 
 # ============================================================================
-# 2. PAGE CONFIGURATION & ENLARGED OBSIDIAN UI STYLING
+# 2. PAGE CONFIGURATION & GRAND OBSIDIAN UI STYLING
 # ============================================================================
 st.set_page_config(
     page_title="SPIDER-SENSE // Autonomous Swarm Command",
@@ -224,23 +224,82 @@ html, body, [class*="css"] {
     font-weight: 500;
 }
 
-/* Market Ticker Tape */
-.market-ticker-tape {
-    display: flex;
-    gap: 24px;
-    background: rgba(4, 7, 16, 0.9);
+/* Grand Market Ticker Grid / Modular Holographic Tiles */
+.market-ticker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.ticker-tile {
+    background: linear-gradient(135deg, rgba(12, 18, 36, 0.95) 0%, rgba(4, 7, 16, 0.98) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
-    padding: 14px 22px;
-    margin-bottom: 24px;
-    overflow-x: auto;
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.92rem;
+    padding: 14px 18px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.65);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
-.ticker-item { display: flex; gap: 8px; align-items: center; }
-.ticker-up { color: #00FF9D; font-weight: 800; }
-.ticker-down { color: #FF1E42; font-weight: 800; }
+
+.ticker-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 35px rgba(0, 245, 255, 0.2);
+}
+
+.ticker-tile.bullish {
+    border-top: 3.5px solid #00FF9D;
+}
+
+.ticker-tile.bearish {
+    border-top: 3.5px solid #FF1E42;
+}
+
+.ticker-tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.ticker-tile-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ticker-tile-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+}
+
+.ticker-badge-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.ticker-badge-pill.up {
+    background: rgba(0, 255, 157, 0.12);
+    color: #00FF9D;
+    border: 1px solid rgba(0, 255, 157, 0.35);
+}
+
+.ticker-badge-pill.down {
+    background: rgba(255, 30, 66, 0.12);
+    color: #FF1E42;
+    border: 1px solid rgba(255, 30, 66, 0.35);
+}
 
 /* Control Hub Container */
 .control-hub-box {
@@ -511,7 +570,7 @@ if "has_run" not in st.session_state:
     st.session_state.has_run = False
 
 # ---------------------------------------------------------------------------
-# HEADER & TICKER
+# HEADER & TICKER TILES
 # ---------------------------------------------------------------------------
 st.markdown("""
 <div class="tactical-navbar">
@@ -528,19 +587,61 @@ st.markdown("""
     </div>
 </div>
 
-<div class="market-ticker-tape">
-    <div class="ticker-item"><span>NIFTY 50:</span> <span class="ticker-up">24,860.20 (+1.14%)</span></div>
-    <div class="ticker-item"><span>BANK NIFTY:</span> <span class="ticker-up">53,120.40 (+0.88%)</span></div>
-    <div class="ticker-item"><span>RELIANCE:</span> <span class="ticker-up">₹2,980.50 (+2.40%)</span></div>
-    <div class="ticker-item"><span>TATAMOTORS:</span> <span class="ticker-up">₹995.20 (+3.80%)</span></div>
-    <div class="ticker-item"><span>ZOMATO:</span> <span class="ticker-up">₹242.10 (+5.10%)</span></div>
-    <div class="ticker-item"><span>INFY:</span> <span class="ticker-down">₹1,780.00 (-0.80%)</span></div>
-    <div class="ticker-item"><span>INDIA VIX:</span> <span class="ticker-down">13.25 (-4.10%)</span></div>
+<div class="market-ticker-grid">
+    <div class="ticker-tile bullish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">NIFTY 50</span>
+            <span class="ticker-badge-pill up">+1.14%</span>
+        </div>
+        <div class="ticker-tile-price">24,860.20</div>
+    </div>
+    <div class="ticker-tile bullish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">BANK NIFTY</span>
+            <span class="ticker-badge-pill up">+0.88%</span>
+        </div>
+        <div class="ticker-tile-price">53,120.40</div>
+    </div>
+    <div class="ticker-tile bullish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">RELIANCE</span>
+            <span class="ticker-badge-pill up">+2.40%</span>
+        </div>
+        <div class="ticker-tile-price">₹2,980.50</div>
+    </div>
+    <div class="ticker-tile bullish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">TATAMOTORS</span>
+            <span class="ticker-badge-pill up">+3.80%</span>
+        </div>
+        <div class="ticker-tile-price">₹995.20</div>
+    </div>
+    <div class="ticker-tile bullish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">ZOMATO</span>
+            <span class="ticker-badge-pill up">+5.10%</span>
+        </div>
+        <div class="ticker-tile-price">₹242.10</div>
+    </div>
+    <div class="ticker-tile bearish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">INFY</span>
+            <span class="ticker-badge-pill down">-0.80%</span>
+        </div>
+        <div class="ticker-tile-price">₹1,780.00</div>
+    </div>
+    <div class="ticker-tile bearish">
+        <div class="ticker-tile-header">
+            <span class="ticker-tile-name">INDIA VIX</span>
+            <span class="ticker-badge-pill down">-4.10%</span>
+        </div>
+        <div class="ticker-tile-price">13.25</div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# MAIN COMMAND CONTROL DECK (TOP PANEL - NO SIDEBAR)
+# MAIN COMMAND CONTROL DECK (TOP PANEL)
 # ---------------------------------------------------------------------------
 st.markdown('<div class="control-hub-box">', unsafe_allow_html=True)
 c1, c2, c3, c4 = st.columns([1.2, 1.2, 1.2, 1.2])
@@ -778,7 +879,7 @@ with tab4:
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-family:'Syne'; font-size:1.25rem; font-weight:700; color:#D8B4FE;">
                         📄 SEBI Statutory Corpus Chunk: {c}
-                    </span>
+                    </div>
                     <span style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#00FF9D; background:rgba(0,255,157,0.1); padding:3px 10px; border-radius:6px; border:1px solid rgba(0,255,157,0.3);">
                         VERIFIED AUDIT
                     </span>
