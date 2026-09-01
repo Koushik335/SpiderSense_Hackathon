@@ -10,18 +10,18 @@ from synthetic_data import TICKERS, generate_market_data, generate_news, generat
 # Page Configuration
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="SPIDER-SENSE // Autonomous Financial Swarm",
+    page_title="SPIDER-SENSE // Autonomous Swarm Command",
     page_icon="🕷️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # ---------------------------------------------------------------------------
-# High-End Fintech Terminal CSS (Clean, Modern Geometric Typography)
+# Black + Red + Blue + Green + Violet High-Impact Cyber Theme
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 * { box-sizing: border-box; }
 
@@ -31,22 +31,25 @@ html, body, [class*="css"] {
     color: #F8FAFC;
 }
 
+/* Deep Black with Multi-Chromatic Shading (Red, Blue, Green, Violet) */
 .stApp {
-    background-color: #030712;
+    background-color: #020408;
     background-image: 
-        radial-gradient(circle at 10% 0%, rgba(230, 36, 41, 0.16) 0%, transparent 45%),
-        radial-gradient(circle at 90% 0%, rgba(0, 240, 255, 0.12) 0%, transparent 45%),
-        radial-gradient(#1E293B 1.2px, transparent 1.2px);
-    background-size: 100% 100%, 100% 100%, 28px 28px;
+        radial-gradient(circle at 5% 0%, rgba(230, 36, 41, 0.18) 0%, transparent 35%),
+        radial-gradient(circle at 95% 0%, rgba(0, 229, 255, 0.16) 0%, transparent 35%),
+        radial-gradient(circle at 50% 10%, rgba(168, 85, 247, 0.14) 0%, transparent 40%),
+        radial-gradient(circle at 50% 95%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+        radial-gradient(#172033 1.2px, transparent 1.2px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 28px 28px;
 }
 
 .block-container {
     padding-top: 1.2rem;
     padding-bottom: 3.5rem;
-    max-width: 1400px;
+    max-width: 1420px;
 }
 
-/* Modern Geometric Tech Logo */
+/* Multi-Chromatic Gradient Brand Title */
 .brand-title {
     font-family: 'Outfit', sans-serif !important;
     font-size: 2.3rem;
@@ -54,7 +57,7 @@ html, body, [class*="css"] {
     letter-spacing: -0.03em;
     line-height: 1;
     margin: 0;
-    background: linear-gradient(90deg, #FFFFFF 25%, #00F0FF 80%);
+    background: linear-gradient(90deg, #FFFFFF 15%, #00E5FF 45%, #A855F7 75%, #10B981 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     display: flex;
@@ -66,20 +69,20 @@ html, body, [class*="css"] {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 0.88rem;
     color: #94A3B8;
-    margin-top: 5px;
+    margin-top: 6px;
     font-weight: 500;
-    letter-spacing: 0.01em;
 }
 
-/* Tactical Navbar Header */
+/* Tactical Navbar */
 .tactical-navbar {
-    background: linear-gradient(135deg, rgba(13, 19, 36, 0.95) 0%, rgba(6, 10, 22, 0.98) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 3px solid #E62429;
+    background: linear-gradient(135deg, rgba(8, 12, 24, 0.96) 0%, rgba(4, 6, 14, 0.98) 100%);
+    border: 1px solid #1E293B;
+    border-top: 3.5px solid #E62429;
+    border-bottom: 2px solid #A855F7;
     border-radius: 16px;
     padding: 20px 28px;
     margin-bottom: 22px;
-    box-shadow: 0 20px 45px rgba(0,0,0,0.85);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.9);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -96,41 +99,55 @@ html, body, [class*="css"] {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border: 1px solid rgba(255,255,255,0.1);
-    background: #090E1A;
+    background: #050811;
     color: #94A3B8;
 }
 
 .badge-pill.live {
-    border-color: rgba(0, 240, 255, 0.45);
-    background: rgba(0, 240, 255, 0.08);
-    color: #00F0FF;
+    border-color: rgba(0, 229, 255, 0.5);
+    background: rgba(0, 229, 255, 0.1);
+    color: #00E5FF;
     display: flex;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+.badge-pill.violet {
+    border-color: rgba(168, 85, 247, 0.5);
+    background: rgba(168, 85, 247, 0.1);
+    color: #C084FC;
+}
+
+.badge-pill.red {
+    border-color: rgba(230, 36, 41, 0.6);
+    background: rgba(230, 36, 41, 0.1);
+    color: #FF384D;
 }
 
 .pulse-dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #00F0FF;
-    box-shadow: 0 0 10px #00F0FF;
+    background: #00E5FF;
+    box-shadow: 0 0 10px #00E5FF;
 }
 
 /* Control Hub Container */
 .control-hub-box {
-    background: linear-gradient(135deg, rgba(13, 19, 34, 0.9) 0%, rgba(8, 12, 24, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(8, 12, 24, 0.92) 0%, rgba(4, 7, 16, 0.96) 100%);
     border: 1px solid #1E293B;
+    border-left: 4px solid #A855F7;
     border-radius: 14px;
     padding: 20px 24px;
     margin-bottom: 22px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
-/* Modern Clean Tabs */
+/* Tabs Navigation */
 .stTabs [data-baseweb="tab-list"] {
     gap: 8px;
-    background: rgba(10, 15, 29, 0.9);
+    background: rgba(6, 10, 20, 0.95);
     padding: 8px 10px;
     border-radius: 12px;
     border: 1px solid #1E293B;
@@ -150,20 +167,20 @@ html, body, [class*="css"] {
 }
 
 .stTabs [aria-selected="true"] {
-    color: #00F0FF !important;
-    background: #0F172A !important;
-    border-color: rgba(0, 240, 255, 0.4) !important;
-    box-shadow: 0 4px 16px rgba(0, 240, 255, 0.15) !important;
+    color: #00E5FF !important;
+    background: #0C1322 !important;
+    border-color: rgba(168, 85, 247, 0.5) !important;
+    box-shadow: 0 4px 18px rgba(168, 85, 247, 0.25) !important;
 }
 
-/* Cards & Surface Modules */
+/* Content Surface Cards */
 .sp-card {
-    background: linear-gradient(135deg, rgba(13, 19, 36, 0.92) 0%, rgba(7, 11, 22, 0.96) 100%);
+    background: linear-gradient(135deg, rgba(8, 12, 24, 0.95) 0%, rgba(4, 6, 14, 0.98) 100%);
     border: 1px solid #1E293B;
     border-radius: 16px;
     padding: 26px;
     margin-bottom: 20px;
-    box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.7);
 }
 
 .sp-card-header {
@@ -182,18 +199,18 @@ html, body, [class*="css"] {
 
 /* Master Verdict Showcase */
 .verdict-hero-card {
-    background: linear-gradient(135deg, rgba(230, 36, 41, 0.1) 0%, rgba(10, 15, 30, 0.9) 100%);
-    border: 2px solid rgba(230, 36, 41, 0.8);
+    background: linear-gradient(135deg, rgba(230, 36, 41, 0.12) 0%, rgba(168, 85, 247, 0.08) 50%, rgba(8, 12, 24, 0.95) 100%);
+    border: 2px solid rgba(230, 36, 41, 0.7);
     border-radius: 16px;
     padding: 30px;
     text-align: center;
     margin-bottom: 22px;
-    box-shadow: 0 16px 40px rgba(230, 36, 41, 0.15);
+    box-shadow: 0 16px 40px rgba(230, 36, 41, 0.2);
 }
 
 .verdict-action {
     font-family: 'Outfit', sans-serif;
-    font-size: 2.6rem;
+    font-size: 2.7rem;
     font-weight: 900;
     letter-spacing: -0.02em;
     margin: 8px 0;
@@ -202,7 +219,7 @@ html, body, [class*="css"] {
 
 /* Specialized Agent Node */
 .agent-node {
-    background: #080D1A;
+    background: #050811;
     border: 1px solid #1E293B;
     border-radius: 14px;
     padding: 20px;
@@ -210,40 +227,42 @@ html, body, [class*="css"] {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
     transition: all 0.2s ease;
 }
 .agent-node:hover {
-    border-color: rgba(0, 240, 255, 0.4);
+    border-color: rgba(0, 229, 255, 0.5);
     transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15);
 }
 
 .trace-line {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.82rem;
     color: #E2E8F0;
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(12, 18, 34, 0.85);
     padding: 12px 14px;
     border-radius: 8px;
-    border-left: 3px solid #00F0FF;
+    border-left: 3px solid #00E5FF;
     margin: 8px 0;
     line-height: 1.55;
 }
 
 /* Citation Box */
 .citation-box {
-    background: #080D1A;
+    background: #050811;
     border: 1px solid #1E293B;
-    border-left: 4px solid #FFD700;
+    border-left: 4px solid #A855F7;
     padding: 16px 20px;
     border-radius: 10px;
     margin-bottom: 12px;
 }
 
-/* Metric KPI HUD Cards */
+/* Metric KPI HUD */
 div[data-testid="stMetric"] {
-    background: #080D1A;
+    background: #050811;
     border: 1px solid #1E293B;
+    border-top: 3px solid #10B981;
     border-radius: 12px;
     padding: 14px 18px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
@@ -262,24 +281,24 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     color: #F8FAFC !important;
 }
 
-/* Modern Primary Action Button */
+/* Action Dispatch Button */
 div.stButton > button {
     font-family: 'Outfit', sans-serif !important;
     font-size: 1.05rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.02em !important;
-    background: linear-gradient(90deg, #E62429 0%, #FF384D 100%) !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em !important;
+    background: linear-gradient(90deg, #E62429 0%, #A855F7 50%, #00E5FF 100%) !important;
     color: #FFFFFF !important;
     border: none !important;
     border-radius: 10px !important;
-    padding: 0.75rem 2rem !important;
-    box-shadow: 0 4px 18px rgba(230, 36, 41, 0.4) !important;
+    padding: 0.8rem 2rem !important;
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4) !important;
     transition: all 0.2s ease !important;
     width: 100%;
 }
 div.stButton > button:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 25px rgba(230, 36, 41, 0.65) !important;
+    box-shadow: 0 8px 30px rgba(0, 229, 255, 0.6) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -290,15 +309,15 @@ div.stButton > button:hover {
 st.markdown("""
 <div class="tactical-navbar">
     <div>
-        <div class="brand-title">🕸️ SPIDER-SENSE FINANCIAL</div>
+        <div class="brand-title">🕷️ SPIDER-SENSE FINANCIAL</div>
         <div class="brand-subtitle">
-            Autonomous Multi-Agent Financial Intelligence Network // Explainable Retail Research
+            Multi-Agent Autonomous Financial Intelligence Network // Explainable Retail Research
         </div>
     </div>
     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <span class="badge-pill live"><span class="pulse-dot"></span>Swarm Online</span>
-        <span class="badge-pill">Sprint 1: PS-01</span>
-        <span class="badge-pill" style="border-color: rgba(230,36,41,0.6); color:#FF384D;">Team YOLOTECH</span>
+        <span class="badge-pill violet">Sprint 1: PS-01</span>
+        <span class="badge-pill red">Team YOLOTECH</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -358,7 +377,7 @@ if st.button("DISPATCH MULTI-AGENT SWARM", use_container_width=True):
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Structured Multi-Tab Navigation
+# Multi-Tab Navigation
 # ---------------------------------------------------------------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🎯 Master Verdict & Guidance",
@@ -380,13 +399,13 @@ else:
     # Tab 1: Master Verdict & Guidance
     with tab1:
         st.markdown('<div class="sp-card">', unsafe_allow_html=True)
-        st.markdown(f'<div class="sp-card-header"><span>Master Synthesis Verdict // <strong>{m_ticker}</strong></span><span style="color:#94A3B8; font-size:0.9rem;">Target: {m_profile}</span></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sp-card-header"><span>Master Synthesis Verdict // <strong>{m_ticker}</strong></span><span style="color:#A855F7; font-size:0.9rem; font-weight:700;">Persona: {m_profile}</span></div>', unsafe_allow_html=True)
         
-        action_col = "#10B981" if "BUY" in synthesis['action'] else ("#EF4444" if "REDUCE" in synthesis['action'] else "#00F0FF")
+        action_col = "#10B981" if "BUY" in synthesis['action'] else ("#FF384D" if "REDUCE" in synthesis['action'] else "#00E5FF")
         
         st.markdown(f"""
         <div class="verdict-hero-card">
-            <div style="font-family:'JetBrains Mono'; font-size:0.8rem; color:#FFD700; text-transform:uppercase; font-weight:700; letter-spacing:0.08em;">
+            <div style="font-family:'JetBrains Mono'; font-size:0.8rem; color:#C084FC; text-transform:uppercase; font-weight:800; letter-spacing:0.08em;">
                 RISK-CALIBRATED VERDICT // {m_profile.upper()}
             </div>
             <div class="verdict-action" style="color:{action_col};">
@@ -400,11 +419,11 @@ else:
 
         st.progress(synthesis["confidence"], text=f"Synthesis Confidence: {synthesis['confidence']:.0%}")
 
-        st.markdown('<div class="sp-card-header" style="margin-top:24px;">Transparent Reasoning Trace</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sp-card-header" style="margin-top:24px; color:#A855F7;">Transparent Reasoning Trace</div>', unsafe_allow_html=True)
         for out in outputs:
             st.markdown(f"""
             <div class="trace-line">
-                <strong style="color:#00F0FF;">[{out.agent}]</strong> ➔ {out.reasoning}
+                <strong style="color:#00E5FF;">[{out.agent}]</strong> ➔ {out.reasoning}
             </div>
             """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -417,13 +436,13 @@ else:
         cols = st.columns(len(outputs))
         for col, o in zip(cols, outputs):
             with col:
-                status_col = "#F59E0B" if o.degraded else ("#10B981" if "BULLISH" in o.label or "GROUNDED" in o.label else "#EF4444")
+                status_col = "#A855F7" if o.degraded else ("#10B981" if "BULLISH" in o.label or "GROUNDED" in o.label else "#FF384D")
                 st.markdown(f"""
                 <div class="agent-node" style="border-left: 4px solid {status_col};">
                     <div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <strong style="color:#FFF; font-size:1.05rem; font-family:'Outfit';">{o.agent}</strong>
-                            <span class="badge-pill" style="font-size:0.62rem; color:{status_col}; border-color:{status_col}40;">
+                            <span class="badge-pill" style="font-size:0.62rem; color:{status_col}; border-color:{status_col}50;">
                                 {'DEGRADED' if o.degraded else 'NOMINAL'}
                             </span>
                         </div>
@@ -436,7 +455,7 @@ else:
                         <div style="font-family:'JetBrains Mono'; font-size:0.75rem; color:#94A3B8;">
                             CONFIDENCE // {o.confidence:.0%}
                         </div>
-                        <div style="font-size:0.84rem; color:#CBD5E1; line-height:1.55; margin:12px 0; background:rgba(15,23,42,0.6); padding:10px 12px; border-radius:6px;">
+                        <div style="font-size:0.84rem; color:#CBD5E1; line-height:1.55; margin:12px 0; background:rgba(12,18,34,0.7); padding:10px 12px; border-radius:6px; border-left: 2px solid {status_col};">
                             {o.reasoning}
                         </div>
                     </div>
@@ -461,11 +480,11 @@ else:
                 simulate_degraded=None if st.session_state.degrade == "none" else st.session_state.degrade
             )
             is_active = (pname == m_profile)
-            action_col = "#10B981" if "BUY" in syn2['action'] else ("#EF4444" if "REDUCE" in syn2['action'] else "#00F0FF")
+            action_col = "#10B981" if "BUY" in syn2['action'] else ("#FF384D" if "REDUCE" in syn2['action'] else "#00E5FF")
             
             with c:
                 st.markdown(f"""
-                <div class="agent-node" style="border: 2px solid {'#00F0FF' if is_active else '#1E293B'}; background:{'rgba(0,240,255,0.05)' if is_active else '#080D1A'};">
+                <div class="agent-node" style="border: 2px solid {'#A855F7' if is_active else '#1E293B'}; background:{'rgba(168,85,247,0.06)' if is_active else '#050811'};">
                     <div>
                         <div style="font-weight:800; font-size:1.05rem; color:#FFF; font-family:'Outfit';">
                             {pname} {'★ (Active)' if is_active else ''}
@@ -495,7 +514,7 @@ else:
             for c in synthesis["citations"]:
                 st.markdown(f"""
                 <div class="citation-box">
-                    <div style="font-family:'Outfit'; font-size:1.1rem; font-weight:700; color:#FFD700;">
+                    <div style="font-family:'Outfit'; font-size:1.1rem; font-weight:700; color:#A855F7;">
                         📄 SEBI Regulatory Filing Chunk: {c}
                     </div>
                     <div style="font-size:0.88rem; color:#CBD5E1; margin-top:6px; line-height:1.5;">
@@ -516,7 +535,7 @@ else:
         m3.metric("30d Forward Return", f"{row['mock_30d_forward_return_pct']}%")
         m4.metric("Directional Accuracy", "PASS ✅" if row["directional_accuracy_proxy"] else "NEUTRAL ➖")
         
-        st.markdown('<div class="sp-card-header" style="margin-top:24px;">Historical Audit Trail (Persistent Across Sessions)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sp-card-header" style="margin-top:24px; color:#10B981;">Historical Audit Trail (Persistent Across Sessions)</div>', unsafe_allow_html=True)
         if os.path.exists(LOG_PATH):
             st.dataframe(pd.read_csv(LOG_PATH), use_container_width=True, hide_index=True)
         else:
