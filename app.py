@@ -1,3 +1,4 @@
+import math
 import os
 import random
 
@@ -8,13 +9,40 @@ from pipeline import RAGIndex, RISK_PROFILES, LOG_PATH, run_pipeline, log_sessio
 from synthetic_data import TICKERS, generate_market_data, generate_news, generate_filing_corpus, generate_portfolio
 
 st.set_page_config(
-    page_title="Sentinel — Multi-Agent Investment Intelligence",
-    page_icon="📊",
+    page_title="Spider-Sense — Multi-Agent Investment Intelligence",
+    page_icon="🕸️",
     layout="wide",
 )
 
 # ---------------------------------------------------------------------------
-# Global CSS
+# Reusable spiderweb SVG (corner decoration)
+# ---------------------------------------------------------------------------
+def spiderweb_svg(size=220, color="#8FF7D6", opacity=0.16, flip_x=False, flip_y=False):
+    scale_x = -1 if flip_x else 1
+    scale_y = -1 if flip_y else 1
+    tx = size if flip_x else 0
+    ty = size if flip_y else 0
+    rings = "".join(
+        f'<circle cx="0" cy="0" r="{r}" />' for r in (size*0.2, size*0.4, size*0.6, size*0.8, size)
+    )
+    spokes = "".join(
+        f'<line x1="0" y1="0" x2="{size*math.cos(a):.1f}" y2="{size*math.sin(a):.1f}" />'
+        for a in [i * (math.pi / 2) / 5 for i in range(6)]
+    )
+    return f"""
+    <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}"
+         style="position:absolute; top:0; left:0; opacity:{opacity}; pointer-events:none; z-index:0;">
+        <g transform="translate({tx},{ty}) scale({scale_x},{scale_y})"
+           stroke="{color}" stroke-width="1" fill="none">
+            {rings}
+            {spokes}
+        </g>
+    </svg>
+    """
+
+
+# ---------------------------------------------------------------------------
+# Global CSS (self-contained — no dependency on .streamlit/config.toml)
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
@@ -23,41 +51,69 @@ st.markdown("""
 html, body, [class*="css"]  { font-family: 'Inter', sans-serif; }
 h1, h2, h3 { font-family: 'Space Grotesk', sans-serif !important; }
 
-.block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1200px; }
+/* Force the dark theme regardless of the visitor's browser/system preference,
+   since we are not shipping a .streamlit/config.toml */
+.stApp {
+    background:
+        radial-gradient(circle at 8% 8%, rgba(143,247,214,0.06), transparent 30%),
+        radial-gradient(circle at 92% 15%, rgba(125,211,252,0.05), transparent 30%),
+        #060A0F;
+    color: #E6EDF3;
+}
+[data-testid="stSidebar"] { background: #0A0F14; }
+[data-testid="stHeader"] { background: rgba(0,0,0,0); }
+#MainMenu, footer { visibility: hidden; }
+
+.block-container { padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1200px; }
+
+/* Subtle tiled web-silk texture across the whole app */
+.stApp::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+        repeating-linear-gradient(45deg, rgba(143,247,214,0.02) 0px, rgba(143,247,214,0.02) 1px, transparent 1px, transparent 60px),
+        repeating-linear-gradient(-45deg, rgba(125,211,252,0.02) 0px, rgba(125,211,252,0.02) 1px, transparent 1px, transparent 60px);
+}
 
 /* Hero */
 .hero {
-    padding: 28px 32px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, rgba(34,211,166,0.15) 0%, rgba(20,30,45,0.4) 60%);
-    border: 1px solid rgba(34,211,166,0.25);
-    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    padding: 30px 34px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(143,247,214,0.10) 0%, rgba(10,15,20,0.6) 65%);
+    border: 1px solid rgba(143,247,214,0.22);
+    margin-bottom: 26px;
 }
+.hero-content { position: relative; z-index: 1; }
 .hero h1 {
-    font-size: 2.1rem;
+    font-size: 2.2rem;
     margin: 0 0 6px 0;
-    background: linear-gradient(90deg, #22D3A6, #7DD3FC);
+    background: linear-gradient(90deg, #8FF7D6, #7DD3FC);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-.hero p { color: #9FB0C0; margin: 0; font-size: 0.95rem; }
+.hero p { color: #94A6B5; margin: 0; font-size: 0.95rem; max-width: 640px; }
 .hero .tag {
-    display: inline-block; margin-top: 10px; padding: 4px 12px;
-    border-radius: 999px; background: rgba(34,211,166,0.12);
-    border: 1px solid rgba(34,211,166,0.35); color: #22D3A6;
+    display: inline-block; margin-top: 12px; padding: 4px 12px;
+    border-radius: 999px; background: rgba(143,247,214,0.10);
+    border: 1px solid rgba(143,247,214,0.3); color: #8FF7D6;
     font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em;
 }
 
 /* Section labels */
 .section-label {
-    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
-    color: #7A8B9A; font-weight: 600; margin: 22px 0 10px 0;
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #7A8B9A; font-weight: 600; margin: 24px 0 10px 0;
+    display: flex; align-items: center; gap: 8px;
 }
+.section-label::before { content: "🕸️"; font-size: 0.85rem; opacity: 0.8; }
 
 /* Agent card */
 .agent-card {
-    border-radius: 14px; padding: 16px 18px; background: #131A22;
-    border: 1px solid #21303C; border-left: 4px solid var(--accent, #7A8B9A);
+    position: relative; overflow: hidden;
+    border-radius: 14px; padding: 16px 18px; background: #0D141B;
+    border: 1px solid #1B2830; border-left: 4px solid var(--accent, #7A8B9A);
     height: 100%;
 }
 .agent-card .name { font-weight: 600; font-size: 0.95rem; color: #E6EDF3; }
@@ -72,35 +128,40 @@ h1, h2, h3 { font-family: 'Space Grotesk', sans-serif !important; }
 .agent-card .dim { font-size: 0.72rem; color: #7A8B9A; text-transform: uppercase; letter-spacing: 0.05em; }
 .agent-card .conf { font-size: 0.8rem; color: #9FB0C0; margin-top: 4px; }
 .agent-card .reasoning { font-size: 0.82rem; color: #B8C4CE; margin-top: 10px; line-height: 1.4; }
-.agent-card .meta { font-size: 0.7rem; color: #5D6D7A; margin-top: 10px; border-top: 1px solid #21303C; padding-top: 8px; }
+.agent-card .meta { font-size: 0.7rem; color: #5D6D7A; margin-top: 10px; border-top: 1px solid #1B2830; padding-top: 8px; }
 
 /* Recommendation card */
 .rec-card {
-    border-radius: 16px; padding: 24px 28px; margin-top: 8px;
-    background: linear-gradient(135deg, var(--rec-bg, #16261F) 0%, #131A22 100%);
-    border: 1px solid var(--rec-border, #2A4A3D);
+    position: relative; overflow: hidden;
+    border-radius: 16px; padding: 26px 30px; margin-top: 8px;
+    background: linear-gradient(135deg, var(--rec-bg, #0F1E19) 0%, #0D141B 100%);
+    border: 1px solid var(--rec-border, #234339);
 }
 .rec-card .action {
+    position: relative; z-index: 1;
     font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700;
-    color: var(--rec-accent, #22D3A6);
+    color: var(--rec-accent, #8FF7D6);
 }
-.rec-card .reasoning { color: #C7D3DC; margin-top: 8px; font-size: 0.92rem; line-height: 1.5; }
-.rec-card .cites { margin-top: 12px; font-size: 0.78rem; color: #7A8B9A; }
-.rec-card .cites code { background: #0B0F14; padding: 2px 6px; border-radius: 6px; color: #22D3A6; }
+.rec-card .reasoning { position: relative; z-index: 1; color: #C7D3DC; margin-top: 8px; font-size: 0.92rem; line-height: 1.5; }
+.rec-card .cites { position: relative; z-index: 1; margin-top: 12px; font-size: 0.78rem; color: #7A8B9A; }
+.rec-card .cites code { background: #060A0F; padding: 2px 6px; border-radius: 6px; color: #8FF7D6; }
 
 /* Profile comparison chip */
 .profile-chip {
-    border-radius: 12px; padding: 14px; background: #131A22; border: 1px solid #21303C; text-align: center;
+    border-radius: 12px; padding: 14px; background: #0D141B; border: 1px solid #1B2830; text-align: center;
 }
 .profile-chip .pname { font-weight: 600; text-transform: capitalize; color: #E6EDF3; font-size: 0.85rem; }
-.profile-chip .paction { font-size: 0.85rem; color: #22D3A6; margin-top: 6px; font-weight: 600; }
+.profile-chip .paction { font-size: 0.85rem; color: #8FF7D6; margin-top: 6px; font-weight: 600; }
 .profile-chip .pconf { font-size: 0.72rem; color: #7A8B9A; margin-top: 4px; }
 
 .stButton>button {
     border-radius: 10px; font-weight: 600; border: none;
-    background: linear-gradient(90deg, #22D3A6, #14B88A); color: #0B0F14;
+    background: linear-gradient(90deg, #8FF7D6, #4FD8B0); color: #060A0F;
     padding: 0.6rem 1.4rem;
 }
+.stButton>button:hover { box-shadow: 0 0 18px rgba(143,247,214,0.35); }
+
+hr { border-color: #1B2830; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -112,7 +173,7 @@ def badge_style(o):
     bullish = {"BULLISH", "POSITIVE", "VOLUME_SPIKE", "GROUNDED"}
     bearish = {"BEARISH", "NEGATIVE"}
     if o.label in bullish:
-        return "#22D3A6", "rgba(34,211,166,0.15)", "#22D3A6", "OK"
+        return "#8FF7D6", "rgba(143,247,214,0.15)", "#8FF7D6", "OK"
     if o.label in bearish:
         return "#F87171", "rgba(248,113,113,0.15)", "#F87171", "OK"
     return "#7DD3FC", "rgba(125,211,252,0.15)", "#7DD3FC", "OK"
@@ -125,8 +186,9 @@ def render_agent_card(o):
         cites = f'<div class="meta">📎 {", ".join(o.citations)}</div>'
     html = f"""
     <div class="agent-card" style="--accent:{accent}; --badge-bg:{badge_bg}; --badge-fg:{badge_fg};">
+        {spiderweb_svg(size=90, color=accent, opacity=0.18, flip_x=True)}
         <span class="badge">{badge_text}</span>
-        <div class="name">{o.agent}</div>
+        <div class="name">🕷️ {o.agent}</div>
         <div class="dim">{o.dimension.replace('_', ' ')}</div>
         <div class="label">{o.label}</div>
         <div class="conf">confidence {o.confidence:.2f}</div>
@@ -140,13 +202,13 @@ def render_agent_card(o):
 
 def render_recommendation(synthesis):
     if synthesis["conflict"]:
-        rec_bg, rec_border, rec_accent = "#2A1F14", "#4A3A2A", "#F59E0B"
+        rec_bg, rec_border, rec_accent = "#241A0C", "#4A3A2A", "#F59E0B"
     elif synthesis["action"].startswith("CONSIDER BUY"):
-        rec_bg, rec_border, rec_accent = "#16261F", "#2A4A3D", "#22D3A6"
+        rec_bg, rec_border, rec_accent = "#0F1E19", "#234339", "#8FF7D6"
     elif synthesis["action"].startswith("CONSIDER REDUCE"):
-        rec_bg, rec_border, rec_accent = "#2A1717", "#4A2A2A", "#F87171"
+        rec_bg, rec_border, rec_accent = "#231313", "#4A2A2A", "#F87171"
     else:
-        rec_bg, rec_border, rec_accent = "#161C26", "#2A3A4A", "#7DD3FC"
+        rec_bg, rec_border, rec_accent = "#101820", "#233A4A", "#7DD3FC"
 
     conflict_tag = ' ⚠️ CONFLICTING SIGNALS' if synthesis["conflict"] else ""
     cites_html = ""
@@ -160,6 +222,7 @@ def render_recommendation(synthesis):
 
     html = f"""
     <div class="rec-card" style="--rec-bg:{rec_bg}; --rec-border:{rec_border}; --rec-accent:{rec_accent};">
+        {spiderweb_svg(size=180, color=rec_accent, opacity=0.12, flip_x=True)}
         <div class="action">{synthesis['action']}{conflict_tag}</div>
         <div class="reasoning">{synthesis['reasoning']}</div>
         {cites_html}
@@ -173,11 +236,15 @@ def render_recommendation(synthesis):
 # ---------------------------------------------------------------------------
 # Hero
 # ---------------------------------------------------------------------------
-st.markdown("""
+st.markdown(f"""
 <div class="hero">
-    <h1>📊 Sentinel — Multi-Agent Investment Intelligence</h1>
-    <p>Real-time signals, RAG-grounded reasoning, and risk-personalized recommendations — explainable at every step.</p>
-    <span class="tag">PS-01 · HackVerse Sprint 1</span>
+    {spiderweb_svg(size=200, color="#8FF7D6", opacity=0.20)}
+    {spiderweb_svg(size=200, color="#7DD3FC", opacity=0.14, flip_x=True)}
+    <div class="hero-content">
+        <h1>🕸️ Spider-Sense — Multi-Agent Investment Intelligence</h1>
+        <p>Real-time signals, RAG-grounded reasoning, and risk-personalized recommendations — every thread of the decision traceable back to its source.</p>
+        <span class="tag">PS-01 · HackVerse Sprint 1</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
